@@ -1,5 +1,5 @@
 # 88thman - Helpers
-## http://88thman.github.io/js.html
+## http://88thman.github.io/js.html JavaScript -> HTML
 Test JavaScript with instant code execution. All settings (except auto-run) are stored in your browsers storage, so you can reload or close the window.
 ### Buttons
 1. Loop-Protection
@@ -25,4 +25,4 @@ Test JavaScript with instant code execution. All settings (except auto-run) are 
 * Errors will be shown instantly, also the executed code.
 * `console.log(string)`
 * `log(string)` = `console.log(string)`
-* `logs(object)` = `console.log(JSON.stringify(string))`(Usefull for showing content of objects)
+* `logs(object)` = `console.log(JSON.stringify(object))`(Usefull for showing content of objects)
