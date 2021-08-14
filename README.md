@@ -7,7 +7,9 @@ Test JavaScript with instant code execution. All settings (except auto-run) are 
    Works only for
 	 ```JavaScript
 	 while (statement) {}
-	 
+	 ```
+	 and
+	 ``JavaScript
 	 do {} while (statement)
 	 ```
 2. Auto-Run
@@ -18,4 +20,6 @@ Test JavaScript with instant code execution. All settings (except auto-run) are 
 4. Lightmode
 ### Functions
 * Errors will be shown instantly, also the executed code.
-* `log(string)` ==> `string`
+* `console.log(string)`
+* `log(string)` = `console.log(string)`
+* `logs(object)` = `console.log(JSON.stringify(string))`(Usefull for showing content of objects)
