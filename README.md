@@ -1,12 +1,21 @@
 # 88thman - Helpers
 ## [[js.html]]
-Test JavaScript with instant code execution.
+Test JavaScript with instant code execution. All settings (except auto-run) are stored in your browsers storage, so you can reload or close the window.
 ### Buttons
-1. Toggle while-loop protection on and off.
+1. Loop-Protection
+   Toggle while-loop protection on and off.
    Works only for
-	 ```JavScript
+	 ```JavaScript
 	 while (statement) {}
 	 
 	 do {} while (statement)
 	 ```
-2. 
+2. Auto-Run
+   After every keyup event, the code gets inserted in a new script-tag. Errors with correct line-numbers are shown.
+   This is the only setting which is by default off to prevent crashes on reloading.
+3. Orientation
+   Rotate editor and console 90°
+4. Lightmode
+### Functions
+* Errors will be shown instantly, also the executed code.
+* `log(string)` ==> `string`
