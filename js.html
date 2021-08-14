@@ -1,10 +1,6 @@
-
-
 <html>
-
-	<meta charset="UTF-8">
-	
-	<head>
+<meta charset="UTF-8">
+<head>
 	<style>
 		/* TODO Media query topbar position */
 	
@@ -45,16 +41,15 @@
 			width: 1.8rem;
 			height: 1.8rem;
 			margin: .1rem;
-			border: 1px solid var(--textdarkcolor);
-			background-color: var(--bgcolor);
+			border: 1px solid var(--bgdarkcolor);
+			background-color: var(--bgdarkcolor);
 			color: var(--textcolor);
 			cursor: pointer;
 			border-radius: .2rem;
 			font-size: 1rem;
 		}
 		button:hover {
-			color: var(--bgcolor);
-			background-color: var(--textcolor);
+			border-color: var(--textdarkcolor);
 		}
 	
 		#splitter {
@@ -64,132 +59,141 @@
 		}
 	
 	
-	#separator {
-		cursor: col-resize;
-		background-color: var(--textcolor);
-		width: 5px;
-		height: 100%;
+		#separator {
+			cursor: col-resize;
+			background-color: var(--textcolor);
+			width: 5px;
+			height: 100%;
+			flex: none;
+			/* Prevent the browser's built-in drag from interfering */
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+		
+		div, textarea {
+			font-size: .8rem;
+			font-family: monospace;
+		}
+		
+		#editorDiv {
+			position: relative;
+			width: 50%;
+			height: 100%;
+			flex: auto;
+			min-width: 40px;
+			min-height: 40px;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box; 
+			counter-reset: line;
+			overflow-y: scroll;
+			overflow-x: hidden;
+			scrollbar-color: var(--textdarkcolor) transparent;
+			scrollbar-width: thin;
+		}
+		
+		
+		#textarea {
+			position: absolute;
+			resize: none;
+			overflow: hidden;
+			height: 100%;
+			width: 100%;
+			white-space: pre-wrap;
+			background: none;
+			color: var(--textcolor);
+			caret-color: var(--textcolor);
+			white-space: pre-wrap;
+			z-index: 1;
+		}
+		
+		#container {
+			position: relative;
+			overflow: visible;
+			min-height: 100%;
+			padding-bottom: 1rem;
+		}
+		
+		#editor {
+			white-space: pre-wrap;
+			color: transparent;
+			user-select: none;
+			-moz-user-select: none;
+			z-index: -1;
+		}
+		
+		
+		#logDiv {
+			width: 50%;
+			height: 100%;
+			flex: auto;
+			min-width: 40px;
+			min-height: 40px;
+			overflow-y: scroll;
+			overflow-x: hidden;
+			white-space: pre-wrap;
+			scrollbar-color: var(--textdarkcolor) transparent;
+			scrollbar-width: thin;
+		}
+		
+		.error {
+			display: block;
+			border-left: 2px solid red;
+			padding: 10px;
+			margin-left: 2px;
+			background-color: rgba(255, 0, 0, .1);
+		}
+		
+		#script {
+			display: none;
+		}
+
+		svg {
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			fill: var(--textcolor);
+			stroke: var(--textcolor);
+		}
+		svg .clear {
+			stroke: var(--bgdarkcolor);
+			fill: var(--bgdarkcolor);
+		}
+		svg .hollow {
+			fill: none;
+		}
+		
+		/* line numbers */
+		#editorDiv {
+			padding-left: 2rem;
+			counter-reset: line;
+		}
+		#editor p {
+			display: block;
+			position: relative;
+		}
+		#editor p:before {
+			position: absolute;
+			display: inline;
+			width: 2rem;
+			height: 100%;
+			left: -2.3rem;
+			text-align: right;
+			counter-increment: line;
+			content: counter(line);
+			color: var(--textdarkcolor);
+			user-select: none;
+			-moz-user-select: none;
+		}
 	
-		/* Prevent the browser's built-in drag from interfering */
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
-	}
 	
-	div, textarea {
-		font-size: .8rem;
-		font-family: monospace;
-	}
-	
-	#editorDiv {
-		position: relative;
-		width: 50%;
-		height: 100%;
-		flex: 1 1 auto;
-		min-width: 40px;
-		min-height: 40px;
-		-moz-box-sizing: border-box;
-		box-sizing: border-box; 
-		counter-reset: line;
-		overflow-y: scroll;
-		overflow-x: hidden;
-		scrollbar-color: var(--textdarkcolor) transparent;
-		scrollbar-width: thin;
-	}
-	
-	
-	#textarea {
-		position: absolute;
-		resize: none;
-		overflow: hidden;
-		height: 100%;
-		width: 100%;
-		white-space: pre-wrap;
-		background: none;
-		color: var(--textcolor);
-		caret-color: var(--textcolor);
-		white-space: pre-wrap;
-		z-index: 1;
-	}
-	
-	#container {
-		position: relative;
-		overflow: visible;
-		min-height: 100%;
-		padding-bottom: 1rem;
-	}
-	
-	#editor {
-		white-space: pre-wrap;
-		color: transparent;
-		user-select: none;
-		-moz-user-select: none;
-		z-index: -1;
-	}
-	
-	
-	#logDiv {
-		width: 50%;
-		height: 100%;
-		flex: 1 1 auto;
-		min-width: 40px;
-		min-height: 40px;
-		overflow-y: scroll;
-		overflow-x: hidden;
-		white-space: pre-wrap;
-		scrollbar-color: var(--textdarkcolor) transparent;
-		scrollbar-width: thin;
-	}
-	
-	.error {
-		display: block;
-		border-left: 2px solid red;
-		padding: 10px;
-		margin-left: 2px;
-		background-color: rgba(255, 0, 0, .1);
-	}
-	
-	#script {
-		display: none;
-	}
-	
-	/* line numbers */
-	#editorDiv {
-		padding-left: 2rem;
-		counter-reset: line;
-	}
-	#editor p {
-		display: block;
-		position: relative;
-	}
-	#editor p:before {
-		position: absolute;
-		display: inline;
-		width: 2rem;
-		height: 100%;
-		left: -2.3rem;
-		text-align: right;
-		counter-increment: line;
-		content: counter(line);
-		color: var(--textdarkcolor);
-		user-select: none;
-		-moz-user-select: none;
-	}
-	
-	#loopProtectButton:before {
-		content: '🛡';
-		position: absolute;
-		font-size: 1.7rem;
-		top: -.4rem;
-		left: 0;
-	}
-	
-	</style></head><body>
+	</style>
+</head>
+<body>
 	<div id="topbar">
-		<button type="button" id="loopProtectButton" onclick="loopProtect.toggle()">&nbsp;</button>
-		<button type="button" id="autoRunButton"     onclick="autoRun.toggle()"    >▶</button>
-		<button type="button" id="orientationButton" onclick="orientation.toggle()">◧</button>
-		<button type="button" id="lightModeButton"   onclick="lightMode.toggle()"  >☼</button>
+		<button type="button" id="loopProtectButton" onclick="loopProtect.toggle()"></button>
+		<button type="button" id="autoRunButton"     onclick="autoRun.toggle()"    ></button>
+		<button type="button" id="orientationButton" onclick="orientation.toggle()"></button>
+		<button type="button" id="lightModeButton"   onclick="lightMode.toggle()"  ></button>
 	</div>
 	<div id="splitter">
 		<div id="editorDiv">
@@ -204,6 +208,57 @@
 	
 	<div id="script"></div>
 	<script>
+		const SVG = {
+			loopProtect: [
+				`<svg viewBox="0 0 10 10">
+					<circle class="hollow" cx="5" cy="5" r="4" />
+					<path class="clear" d="M1,7.5 L9,2.5" />
+					<path class="hollow" d="M2,9.5 L2,7.5 L4,7.4" />
+					<path class="hollow" d="M8,0.5 L8,2.5 L6,2.6" />
+				</svg>`,
+				`<svg viewBox="0 0 10 10">
+					<circle class="hollow" cx="5" cy="5" r="4" />
+					<path d="M2,7.5 L8,2.5" />
+				</svg>`,
+			],
+			autoRun: [
+				`<svg viewBox="0 0 10 10">
+					<path d="M3,1 L8,5 L3,9 Z" />
+				</svg>`,
+				`<svg viewBox="0 0 10 10">
+					<path d="M2,1 L4,1 L4,9 L2,9 Z" />
+					<path d="M6,1 L8,1 L8,9 L6,9 Z" />
+				</svg>`
+			],
+			orientation: [
+				`<svg viewBox="0 0 10 10">
+					<path d="M1,1 L9,1 L9,9 L1,9 Z" />
+					<path class="clear" d="M2,6 L8,6 L8,8 L2,8 Z" />
+				</svg>`,
+				`<svg viewBox="0 0 10 10">
+					<path d="M1,1 L9,1 L9,9 L1,9 Z" />
+					<path class="clear" d="M2,2 L4,2 L4,8 L2,8 Z" />
+				</svg>`,
+				`<svg viewBox="0 0 10 10">
+					<path d="M1,1 L9,1 L9,9 L1,9 Z" />
+					<path class="clear" d="M2,2 L8,2 L8,4 L2,4 Z" />
+				</svg>`,
+				`<svg viewBox="0 0 10 10">
+					<path d="M1,1 L9,1 L9,9 L1,9 Z" />
+					<path class="clear" d="M6,2 L8,2 L8,8 L6,8 Z" />
+				</svg>`
+			],
+			lightMode: [
+				`<svg viewBox="0 0 10 10">
+					<path d="M2,2 8,8 M8,2 L2,8 M5,0.7 L5,9.3 M0.7,5 L9.3,5" />
+					<circle class="clear" cx="5" cy="5" r="3" />
+					<circle cx="5" cy="5" r="2.5" />
+				</svg>`,
+				`<svg viewBox="0 0 10 10">
+					<path d="M4,1 L4,9 C9,9 9,1 4,1" />
+				</svg>`
+			]
+		};
 		const style      = document.documentElement.style;
 		const splitter   = document.getElementById('splitter');
 		const separator  = document.getElementById('separator');
@@ -214,43 +269,36 @@
 		const textarea   = document.getElementById('textarea');
 
 		var loopProtect = {
-			state: localStorage.getItem('loopProtect', 0),
+			state: locNum('loopProtect'),
 			button: document.getElementById('loopProtectButton'),
 			toggle: function() {
 				this.state = (loopProtect.state + 1) % 2;
 				this.display();
-				localStorage.setProperty('loopProtect', this.state);
+				localStorage.setItem('loopProtect', this.state);
 			},
 			display: function() {
-				if (this.state) {
-					this.button.innerHTMLL = '&nbsp;';
-				} else {
-					this.button.innerHTML = '✔';
-				}
-			},
-			init: this.display()
+				this.button.innerHTML = SVG.loopProtect[this.state];
+			}
 		};
+		loopProtect.display();
 
 		var autoRun = {
 			state: 0,
 			button: document.getElementById('autoRunButton'),
 			toggle: function() {
 				this.state = (this.state + 1) % 2;
+				run();
 				this.display();
 			},
 			display: function() {
-				if (this.state) {
-					this.button.innerHTML = '❚❚';
-				} else {
-					this.button.innerHTML = '▶';
-				}
-			},
-			init: this.display()
+				this.button.innerHTML = SVG.autoRun[this.state];
+			}
 		};
+		autoRun.display();
 
 		var orientation = {
 			STATES: ['EDITOR_LEFT', 'EDITOR_TOP', 'EDITOR_RIGHT', 'EDITOR_BOTTOM'],
-			state: localStorage.getItem('orientation', 0),
+			state: locNum('orientation'),
 			button: document.getElementById('orientationButton'),
 			get: function() {
 				return this.STATES[this.state];
@@ -261,9 +309,8 @@
 				localStorage.setItem('orientation', this.state);
 			},
 			display: function() {
-				if (this.get() == 'EDITOR_LEFT') {
-					this.button.style.MozTransform = 'rotate(-90deg)';
-					splitter.style.flexDirection = 'row';
+				this.button.innerHTML = SVG.orientation[this.state];
+				if (this.get() == 'EDITOR_LEFT' || this.get() == 'EDITOR_RIGHT') {
 					separator.style.width = '5px';
 					separator.style.height = '100%';
 					separator.style.cursor = 'col-resize';
@@ -271,9 +318,7 @@
 					editorDiv.style.height = '100%';
 					logDiv.style.width = localStorage.getItem('logdivwidth', '50%');
 					logDiv.style.height = '100%';
-				} else if (this.get() == 'EDITOR_TOP') {
-					this.button.style.MozTransform = 'rotate(0deg)';
-					splitter.style.flexDirection = 'column';
+				} else if (this.get() == 'EDITOR_TOP' || this.get() == 'EDITOR_BOTTOM') {
 					separator.style.width = '100%';
 					separator.style.height = '5px';
 					separator.style.cursor = 'row-resize';
@@ -281,21 +326,27 @@
 					editorDiv.style.width = '100%';
 					logDiv.style.height = localStorage.getItem('logdivheight', '50%');
 					logDiv.style.width = '100%';
-				} else if (this.get() == 'EDITOR_RIGHT') {
-
-				} else if (this.get() == 'EDITOR_BOTTOM') {
-
 				}
-			},
-			init: this.display()
+
+				if (this.get() == 'EDITOR_LEFT') {
+					splitter.style.flexDirection = 'row';
+				} else if (this.get() == 'EDITOR_TOP') {
+					splitter.style.flexDirection = 'column';
+				} else if (this.get() == 'EDITOR_RIGHT') {
+					splitter.style.flexDirection = 'row-reverse';
+				} else if (this.get() == 'EDITOR_BOTTOM') {
+					splitter.style.flexDirection = 'column-reverse';
+				}
+			}
 		};
+		orientation.display();
 
 		var lightMode = {
 			STATES: ['DARK', 'BRIGHT'],
-			state: localStorage.getItem('lightMode', 0),
+			state: locNum('lightMode'),
 			button: document.getElementById('lightModeButton'),
 			get: function() {
-				return this.STATES[lightMode.state];
+				return this.STATES[this.state];
 			},
 			toggle: function() {
 				this.state = (this.state + 1) % this.STATES.length;
@@ -303,6 +354,7 @@
 				localStorage.setItem('lightMode', this.state);
 			},
 			display: function() {
+				this.button.innerHTML = SVG.lightMode[this.state];
 				if (this.get() == 'DARK') {
 					style.setProperty('--bgcolor', '#111');
 					style.setProperty('--bgdarkcolor', '#000');
@@ -314,9 +366,17 @@
 					style.setProperty('--textcolor', '#222');
 					style.setProperty('--textdarkcolor', '#666');
 				}
-			},
-			init: this.display()
+			}
 		};
+		lightMode.display();
+
+		function locNum(id) {
+			if (localStorage.getItem(id)) {
+				return Number(localStorage.getItem(id));
+			} else {
+				return 0;
+			}
+		}
 	
 		function keyDown(event) {
 			if (event.keyCode == 9) { // tabulator
@@ -330,7 +390,7 @@
 					textarea.selectionStart = selStart + 1;
 					textarea.selectionEnd = selEnd + 1;
 				}
-			} else if (event.keyCode == 13) { // enter
+			} else if (event.keyCode == 13) { // enter: continue spaces
 				let selStart = textarea.selectionStart;
 				let selEnd = textarea.selectionEnd;
 				let a = textarea.value.substring(0, textarea.selectionStart);
@@ -354,7 +414,6 @@
 	
 			function onMouseDown(e)
 			{
-				//console.log("mouse down: " + e.clientX);
 				md = {e,
 						offsetLeft:  element.offsetLeft,
 						offsetTop:   element.offsetTop,
@@ -366,37 +425,53 @@
 	
 				document.onmousemove = onMouseMove;
 				document.onmouseup = () => {
-					//console.log("mouse up");
 					document.onmousemove = document.onmouseup = null;
 				}
 			}
 	
 			function onMouseMove(e)
 			{
-				//console.log("mouse move: " + e.clientX);
 				var delta = {x: e.clientX - md.e.clientX,
 								y: e.clientY - md.e.clientY};
 	
-				if (orientation == SPLIT_H ) 
+				if (orientation.get() == 'EDITOR_LEFT') 
 				{
 					// Prevent negative-sized elements
 					delta.x = Math.min(Math.max(delta.x, -md.editorDivWidth),
 									md.secondWidth);
 	
-					//element.style.left = md.offsetLeft + delta.x + "px";
 					editorDiv.style.width = (md.editorDivWidth + delta.x) + "px";
 					logDiv.style.width = (md.secondWidth - delta.x) + "px";
 	
 					localStorage.setItem('editorwidth', editorDiv.style.width);
 					localStorage.setItem('logdivwidth', logDiv.style.width);
-				} else {
+				} else if (orientation.get() == 'EDITOR_TOP') {
 					// Prevent negative-sized elements
 					delta.y = Math.min(Math.max(delta.y, -md.editorDivHeight),
 									md.secondHeight);
 	
-					//element.style.top = md.offsetTop + delta.y + "px";
 					editorDiv.style.height = (md.editorDivHeight + delta.y) + "px";
 					logDiv.style.height = (md.secondHeight - delta.y) + "px";
+	
+					localStorage.setItem('editorheight', editorDiv.style.height);
+					localStorage.setItem('logdivheight', logDiv.style.height);
+				} else if (orientation.get() == 'EDITOR_RIGHT') {
+					// Prevent negative-sized elements
+					delta.x = Math.min(Math.max(delta.x, -md.secondWidth),
+									md.editorDivWidth);
+	
+					logDiv.style.width = (md.secondWidth + delta.x) + "px";
+					editorDiv.style.width = (md.editorDivWidth - delta.x) + "px";
+	
+					localStorage.setItem('editorwidth', editorDiv.style.width);
+					localStorage.setItem('logdivwidth', logDiv.style.width);
+				} else if (orientation.get() == 'EDITOR_BOTTOM') {
+					// Prevent negative-sized elements
+					delta.y = Math.min(Math.max(delta.y, -md.secondHeight),
+									md.editorDivHeight);
+	
+					logDiv.style.height = (md.secondHeight + delta.y) + "px";
+					editorDiv.style.height = (md.editorDivHeight - delta.y) + "px";
 	
 					localStorage.setItem('editorheight', editorDiv.style.height);
 					localStorage.setItem('logdivheight', logDiv.style.height);
@@ -415,22 +490,39 @@
 		dragElement( document.getElementById("separator"));
 	
 		window.addEventListener('load', function () {
-			textarea.value = localStorage.getItem('script', '');
+			if (localStorage.getItem('script')) {
+				textarea.value = localStorage.getItem('script');
+			} else {
+				textarea.value =
+`for (let i = 0; i < 3; ++i) {
+	log('i = ' + i);
+}
+
+
+console.log('--------------------------')
+
+
+var obj = {
+	name: 'Name of Object',
+	id: 1
+};
+
+logs(obj);
+
+
+x
+
+
+// Remember to press "play" ;)
+`;
+			}
 			transfer();
 			run();
-	
-			if (orientation == SPLIT_H) {
-				editorDiv.style.width = localStorage.getItem('editorwidth', '50%');
-				logDiv.style.width = localStorage.getItem('logdivwidth', '50%');
-			} else {
-				editorDiv.style.height = localStorage.getItem('editorheight', '50%');
-				logDiv.style.height = localStorage.getItem('logdivheight', '50%');
-			}
 		});
 	
 		var whileLoopCounter253;
 		function run() {
-			if (autoRun) {
+			if (autoRun.state) {
 				while(logDiv.lastChild) {
 					logDiv.removeChild(logDiv.lastChild);
 				}
@@ -440,10 +532,10 @@
 				}
 				var s = document.createElement('script');
 				s.type = 'text/javascript';
-				whileLoopCounter253 = 100000000;
+				whileLoopCounter253 = 1000000;
 				let code = textarea.value;
 				let counterCode = ';if(--whileLoopCounter253<0){throw new Error("LoopProtection triggered");break;}';
-				if (loopProtect.state) {
+				if (loopProtect.state == 0) {
 					code = code
 						.replace(/((?:^|[^a-z])while\s*\(.*?\)\s*{)/gi,'$1' + counterCode) // while(){
 						.replace(/(}\s*while\s*\(.*?\))/gi, counterCode + '$1') // }while()
@@ -477,5 +569,6 @@
 			return false;
 		}
 	
-	</script></body></html>
-	
+	</script>
+</body>
+</html>
