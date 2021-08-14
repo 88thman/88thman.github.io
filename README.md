@@ -9,7 +9,7 @@ Test JavaScript with instant code execution. All settings (except auto-run) are 
 	 while (statement) {}
 	 ```
 	 and
-	 ``JavaScript
+	 ```JavaScript
 	 do {} while (statement)
 	 ```
 2. Auto-Run
