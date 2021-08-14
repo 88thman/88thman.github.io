@@ -176,7 +176,7 @@
 		-moz-user-select: none;
 	}
 	
-	#loopProtector:before {
+	#loopProtectButton:before {
 		content: '🛡';
 		position: absolute;
 		font-size: 1.7rem;
@@ -231,6 +231,65 @@
 			init: this.display()
 		};
 
+		var autoRun = {
+			state: 0,
+			button: document.getElementById('autoRunButton'),
+			toggle: function() {
+				this.state = (this.state + 1) % 2;
+				this.display();
+			},
+			display: function() {
+				if (this.state) {
+					this.button.innerHTML = '❚❚';
+				} else {
+					this.button.innerHTML = '▶';
+				}
+			},
+			init: this.display()
+		};
+
+		var orientation = {
+			STATES: ['EDITOR_LEFT', 'EDITOR_TOP', 'EDITOR_RIGHT', 'EDITOR_BOTTOM'],
+			state: localStorage.getItem('orientation', 0),
+			button: document.getElementById('orientationButton'),
+			get: function() {
+				return this.STATES[this.state];
+			},
+			toggle: function() {
+				this.state = (this.state + 1) % this.STATES.length;
+				this.display();
+				localStorage.setItem('orientation', this.state);
+			},
+			display: function() {
+				if (this.get() == 'EDITOR_LEFT') {
+					this.button.style.MozTransform = 'rotate(-90deg)';
+					splitter.style.flexDirection = 'row';
+					separator.style.width = '5px';
+					separator.style.height = '100%';
+					separator.style.cursor = 'col-resize';
+					editorDiv.style.width = localStorage.getItem('editorwidth', '50%');
+					editorDiv.style.height = '100%';
+					logDiv.style.width = localStorage.getItem('logdivwidth', '50%');
+					logDiv.style.height = '100%';
+				} else if (this.get() == 'EDITOR_TOP') {
+					this.button.style.MozTransform = 'rotate(0deg)';
+					splitter.style.flexDirection = 'column';
+					separator.style.width = '100%';
+					separator.style.height = '5px';
+					separator.style.cursor = 'row-resize';
+					editorDiv.style.height = localStorage.getItem('editorheight', '50%');
+					editorDiv.style.width = '100%';
+					logDiv.style.height = localStorage.getItem('logdivheight', '50%');
+					logDiv.style.width = '100%';
+				} else if (this.get() == 'EDITOR_RIGHT') {
+
+				} else if (this.get() == 'EDITOR_BOTTOM') {
+
+				}
+			},
+			init: this.display()
+		};
+
 		var lightMode = {
 			STATES: ['DARK', 'BRIGHT'],
 			state: localStorage.getItem('lightMode', 0),
@@ -255,20 +314,6 @@
 					style.setProperty('--textcolor', '#222');
 					style.setProperty('--textdarkcolor', '#666');
 				}
-			},
-			init: this.display()
-		};
-
-		var autoRun = {
-			state: 0,
-			button: document.getElementById('autoRunButton'),
-			toggle: function() {
-				this.state = (this.state + 1) % 2;
-				this.display();
-			},
-			display: function() {
-				this.button.innerHTML = '▶';
-				this.button.innerHTML = '❚❚';
 			},
 			init: this.display()
 		};
@@ -297,34 +342,6 @@
 					textarea.selectionEnd = selEnd + spaces.length + 1;
 					event.returnValue = false;
 				}
-			}
-		}
-	
-		var orientation = SPLIT_V;
-		function switchOrientation() {
-			localStorage.setItem('orientation', orientation);
-			if (orientation == SPLIT_H) {
-				orientation = SPLIT_V;
-				rotateButton.style.MozTransform = 'rotate(0deg)';
-				splitter.style.flexDirection = 'column';
-				separator.style.width = '100%';
-				separator.style.height = '5px';
-				separator.style.cursor = 'row-resize';
-				editorDiv.style.height = localStorage.getItem('editorheight', '50%');
-				editorDiv.style.width = '100%';
-				logDiv.style.height = localStorage.getItem('logdivheight', '50%');
-				logDiv.style.width = '100%';
-			} else {
-				orientation = SPLIT_H;
-				rotateButton.style.MozTransform = 'rotate(-90deg)';
-				splitter.style.flexDirection = 'row';
-				separator.style.width = '5px';
-				separator.style.height = '100%';
-				separator.style.cursor = 'col-resize';
-				editorDiv.style.width = localStorage.getItem('editorwidth', '50%');
-				editorDiv.style.height = '100%';
-				logDiv.style.width = localStorage.getItem('logdivwidth', '50%');
-				logDiv.style.height = '100%';
 			}
 		}
 	
