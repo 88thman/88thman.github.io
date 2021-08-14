@@ -186,7 +186,7 @@
 	
 	</style></head><body>
 	<div id="topbar">
-		<button type="button" id="loopProtector" onclick="switchLoopProtection()">&nbsp;</button>
+		<button type="button" id="loopProtectButton" onclick="loopProtect.toggle()">&nbsp;</button>
 		<button type="button" onclick="switchRun(this)">▶</button>
 		<button type="button" id="rotateButton" onclick="switchOrientation()">◧</button>
 		<button type="button" id="lightModeButton" onclick="lightMode.toggle()">☼</button>
@@ -204,6 +204,22 @@
 	
 	<div id="script"></div>
 	<script>
+		var loopProtect = {
+			get: function() {
+				return loopProtect.state;
+			},
+			toggle: function() {
+				loopProtect.state = (loopProtect.state + 1) % 2;
+				loopProtect.display();
+				localStorage.setProperty('loopProtect', loopProtect.state);
+			},
+			button: document.getElementById('loopProtectButton'),
+			display: function() {
+
+			},
+			state: localStorage.getItem('loopProtect', 0)
+		};
+
 		var lightMode = {
 			get: function() {
 				return lightMode.STATES[lightMode.state];
@@ -211,6 +227,7 @@
 			toggle: function() {
 				lightMode.state = (lightMode.state + 1) % lightMode.STATES.length;
 				lightMode.display();
+				localStorage.setItem('lightMode', lightMode.state);
 			},
 			display: function() {
 				if (lightMode.get() == 'DARK') {
@@ -227,14 +244,8 @@
 			},
 			button: document.getElementById('lightModeButton'),
 			STATES: ['DARK', 'BRIGHT'],
-			state: 0,
+			state: localStorage.getItem('lightMode', 0),
 		};
-		const SPLITMODE = {
-			H: 0,
-			V: 1,
-			HR: 2,
-			VR: 3
-		}
 		
 		var loopProtection = false;
 		function switchLoopProtection() {
@@ -405,7 +416,6 @@
 			textarea.value = localStorage.getItem('script', '');
 			transfer();
 			run();
-			lightMode = localStorage.getItem('lightmode', BRIGHT);
 			switchLightmode();
 			orientation = localStorage.getItem('orientation', SPLIT_V);
 			switchOrientation();
