@@ -188,8 +188,8 @@
 	<div id="topbar">
 		<button type="button" id="loopProtector" onclick="switchLoopProtection()">&nbsp;</button>
 		<button type="button" onclick="switchRun(this)">▶</button>
-		<button type="button" id ="rotateButton" onclick="switchOrientation()">◧</button>
-		<button type="button" onclick="switchLightmode()">☼</button>
+		<button type="button" id="rotateButton" onclick="switchOrientation()">◧</button>
+		<button type="button" id="lightModeButton" onclick="lightMde.toggle()">☼</button>
 	</div>
 	<div id="splitter">
 		<div id="editorDiv">
@@ -204,8 +204,37 @@
 	
 	<div id="script"></div>
 	<script>
-		const DARK = 0, BRIGHT = 1;
-		const SPLIT_H = 0, SPLIT_V = 1, SPLIT_HR  = 2, SPLIT_VR = 3;
+		var lightMode = {
+			get: function() {
+				return lightMode.STATES[lightMode.state];
+			},
+			toggle: function() {
+				lightMode.state = (lightMode.state + 1) % lightMode.STATES.length;
+				lightMode.display();
+			},
+			display: function() {
+				if (lightMode.get() == 'DARK') {
+					style.setProperty('--bgcolor', '#111');
+					style.setProperty('--bgdarkcolor', '#000');
+					style.setProperty('--textcolor', '#ddd');
+					style.setProperty('--textdarkcolor', '#666');
+				} else if (lightMode.get() == 'BRIGHT') {
+					style.setProperty('--bgcolor', '#eee');
+					style.setProperty('--bgdarkcolor', '#fff');
+					style.setProperty('--textcolor', '#222');
+					style.setProperty('--textdarkcolor', '#666');
+				}
+			},
+			button: document.getElementById('lightModeButton'),
+			STATES: ['DARK', 'BRIGHT'],
+			state: 0,
+		};
+		const SPLITMODE = {
+			H: 0,
+			V: 1,
+			HR: 2,
+			VR: 3
+		}
 		
 		var loopProtection = false;
 		function switchLoopProtection() {
@@ -234,24 +263,6 @@
 				autoRun = true;
 				button.innerHTML = '❚❚';
 				run();
-			}
-		}
-	
-		var lightMode = BRIGHT;
-		function switchLightmode() {
-			localStorage.setItem('lightmode', lightMode);
-			if (lightMode == DARK) {
-				lightMode = BRIGHT;
-				style.setProperty('--bgcolor', '#eee');
-				style.setProperty('--bgdarkcolor', '#fff');
-				style.setProperty('--textcolor', '#222');
-				style.setProperty('--textdarkcolor', '#666');
-			} else {
-				lightMode = DARK;
-				style.setProperty('--bgcolor', '#111');
-				style.setProperty('--bgdarkcolor', '#000');
-				style.setProperty('--textcolor', '#ddd');
-				style.setProperty('--textdarkcolor', '#666');
 			}
 		}
 		
