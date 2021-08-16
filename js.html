@@ -193,7 +193,7 @@
 </head>
 <body>
 	<div id="topbar">
-		<a class="button" id="infoButton" href="../" target="_blank"></a>
+		<a class="button" id="infoButton" href="../" target="_blank" title="Open Manual"></a>
 		<button class="button" type="button" id="loopProtectButton" onclick="loopProtect.toggle()"></button>
 		<button class="button" type="button" id="autoRunButton"     onclick="autoRun.toggle()"    ></button>
 		<button class="button" type="button" id="orientationButton" onclick="orientation.toggle()"></button>
@@ -386,13 +386,13 @@
 					style.setProperty('--bgdarkcolor', '#000');
 					style.setProperty('--textcolor', '#ddd');
 					style.setProperty('--textdarkcolor', '#666');
-					this.button.title = 'LightMode Bright';
+					this.button.title = 'Switch to LightMode Bright';
 				} else if (this.get() == 'BRIGHT') {
 					style.setProperty('--bgcolor', '#eee');
 					style.setProperty('--bgdarkcolor', '#fff');
 					style.setProperty('--textcolor', '#222');
 					style.setProperty('--textdarkcolor', '#666');
-					this.button.title = 'LightMode Dark';
+					this.button.title = 'Switch to LightMode Dark';
 				}
 			}
 		};
