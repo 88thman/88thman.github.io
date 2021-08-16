@@ -290,6 +290,11 @@
 			},
 			display: function() {
 				this.button.innerHTML = SVG.loopProtect[this.state];
+				if (this.state) {
+					this.button.title = 'Turn LoopProtection off'
+				} else {
+					this.button.title = 'Turn LoopProtection on'
+				}
 			}
 		};
 		loopProtect.display();
