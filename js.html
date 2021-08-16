@@ -36,7 +36,7 @@
 			background-color: var(--bgdarkcolor);
 		}
 	
-		button {
+		.button {
 			position: relative;
 			width: 1.8rem;
 			height: 1.8rem;
@@ -48,7 +48,7 @@
 			border-radius: .2rem;
 			font-size: 1rem;
 		}
-		button:hover {
+		.button:hover {
 			border-color: var(--textdarkcolor);
 		}
 	
@@ -190,10 +190,11 @@
 </head>
 <body>
 	<div id="topbar">
-		<button type="button" id="loopProtectButton" onclick="loopProtect.toggle()"></button>
-		<button type="button" id="autoRunButton"     onclick="autoRun.toggle()"    ></button>
-		<button type="button" id="orientationButton" onclick="orientation.toggle()"></button>
-		<button type="button" id="lightModeButton"   onclick="lightMode.toggle()"  ></button>
+		<a class="button" href="../"></a>
+		<button class="button" type="button" id="loopProtectButton" onclick="loopProtect.toggle()"></button>
+		<button class="button" type="button" id="autoRunButton"     onclick="autoRun.toggle()"    ></button>
+		<button class="button" type="button" id="orientationButton" onclick="orientation.toggle()"></button>
+		<button class="button" type="button" id="lightModeButton"   onclick="lightMode.toggle()"  ></button>
 	</div>
 	<div id="splitter">
 		<div id="editorDiv">
@@ -209,6 +210,11 @@
 	<div id="script"></div>
 	<script>
 		const SVG = {
+			info:
+				`<svg viewBox="0 0 10 10">
+					<circle cx="5" cy="2" r="1" />
+					<path d="M4,4 L6,4 L6,8 L4,8 Z" />
+				</svg>`,
 			loopProtect: [
 				`<svg viewBox="0 0 10 10">
 					<circle class="hollow" cx="5" cy="5" r="4" />
@@ -267,6 +273,9 @@
 		const logDiv     = document.getElementById("logDiv");
 		const script     = document.getElementById('script');
 		const textarea   = document.getElementById('textarea');
+
+		const infoButton = document.getElementById('infoButton');
+		infoButton.innerHTML = SVG.info;
 
 		var loopProtect = {
 			state: locNum('loopProtect'),
