@@ -214,7 +214,7 @@
 			info:
 				`<svg viewBox="0 0 10 10">
 					<circle cx="5" cy="2" r="1" />
-					<path d="M4,4 L6,4 L6,8 L4,8 Z" />
+					<path d="M4,55 L6,5 L6,9 L4,9 Z" />
 				</svg>`,
 			loopProtect: [
 				`<svg viewBox="0 0 10 10">
@@ -305,7 +305,7 @@
 			}
 		};
 		autoRun.display();
-
+		alert(locNum('orientation'));
 		var orientation = {
 			STATES: ['EDITOR_LEFT', 'EDITOR_TOP', 'EDITOR_RIGHT', 'EDITOR_BOTTOM'],
 			state: locNum('orientation'),
