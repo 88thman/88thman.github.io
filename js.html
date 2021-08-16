@@ -290,10 +290,10 @@
 			},
 			display: function() {
 				this.button.innerHTML = SVG.loopProtect[this.state];
-				if (this.state) {
-					this.button.title = 'Turn LoopProtection off'
+				if (this.state == 0) {
+					this.button.title = 'Turn LoopProtection off';
 				} else {
-					this.button.title = 'Turn LoopProtection on'
+					this.button.title = 'Turn LoopProtection on';
 				}
 			}
 		};
@@ -309,6 +309,11 @@
 			},
 			display: function() {
 				this.button.innerHTML = SVG.autoRun[this.state];
+				if (this.state) {
+					this.button.title = 'Turn AutoRun off';
+				} else {
+					this.button.title = 'Turn AutoRun on';
+				}
 			}
 		};
 		autoRun.display();
@@ -347,12 +352,16 @@
 
 				if (this.get() == 'EDITOR_LEFT') {
 					splitter.style.flexDirection = 'row';
+					this.button.title = 'Rotate editor to top';
 				} else if (this.get() == 'EDITOR_TOP') {
 					splitter.style.flexDirection = 'column';
+					this.button.title = 'Rotate editor to right';
 				} else if (this.get() == 'EDITOR_RIGHT') {
 					splitter.style.flexDirection = 'row-reverse';
+					this.button.title = 'Rotate editor to bottom';
 				} else if (this.get() == 'EDITOR_BOTTOM') {
 					splitter.style.flexDirection = 'column-reverse';
+					this.button.title = 'Rotate editor to left';
 				}
 			}
 		};
@@ -377,11 +386,13 @@
 					style.setProperty('--bgdarkcolor', '#000');
 					style.setProperty('--textcolor', '#ddd');
 					style.setProperty('--textdarkcolor', '#666');
+					this.button.title = 'LightMode Bright';
 				} else if (this.get() == 'BRIGHT') {
 					style.setProperty('--bgcolor', '#eee');
 					style.setProperty('--bgdarkcolor', '#fff');
 					style.setProperty('--textcolor', '#222');
 					style.setProperty('--textdarkcolor', '#666');
+					this.button.title = 'LightMode Dark';
 				}
 			}
 		};
