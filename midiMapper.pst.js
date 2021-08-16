@@ -7,10 +7,9 @@ var PASS_THROUGH_INPUT = false; // true or false
 var SEND_UNMAPPED_MIDI = true; // true or false
 
 var MIDDLE_C_NUMBER = 4; // corresponds to midi note 60
-var NOTE_NAMES = 'c, c#, d, d#, e, f, f#, g, g#, a, a#, b';
-	// can be modified, german for example: 'c, cis, d, dis, e, f, fis, g, gis, a, b, h'
-	// be careful to not use any of the abbreviations, it might not work
-
+var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
+// can be modified, german for example: 'c, cis, d, dis, e, f, fis, g, gis, a, b, h'
+// be careful to not use any of the abbreviations, it might not work
 
 /*////////////////////////////////// MANUAL ////////////////////////////////////
 
@@ -201,13 +200,8 @@ Pro-Tips:
 			r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
 */
 
-
-
 /////////////////////////// EXAMPLE (can be deleted) ///////////////////////////
 // TODO Put Example in comment section
-
-
-
 
 var MIDI_MAPPING_EXAMPLE = `
 
@@ -327,88 +321,73 @@ var MIDI_MAPPING_EXAMPLE = `
 `;
 //////////////////////////////// END OF EXAMPLE ////////////////////////////////
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /////////////////// CODE - DO NOT EDIT (unless you know how) ///////////////////
-var noteNames = NOTE_NAMES.replace(/\s/g,'').split(/,/);
+var noteNames = NOTE_NAMES.replace(/\s/g, "").split(/,/);
 var dict = {
-	'r':       'receive',
-	'rec':     'receive',
-	'receive': 'receive',
-	's':    'send',
-	'snd':  'send',
-	'send': 'send',
-	'ch':      'channel',
-	'channel': 'channel',
-	't':    'type',
-	'typ':  'type',
-	'type': 'type',
-	'nr':     'number',
-	'number': 'number',
-	'v':     'value',
-	'val':   'value',
-	'value': 'value',
+  r: "receive",
+  rec: "receive",
+  receive: "receive",
+  s: "send",
+  snd: "send",
+  send: "send",
+  ch: "channel",
+  channel: "channel",
+  t: "type",
+  typ: "type",
+  type: "type",
+  nr: "number",
+  number: "number",
+  v: "value",
+  val: "value",
+  value: "value",
 
-	'i':     'input',
-	'input': 'input',
-	'ic':           'inputchannel',
-	'inch':         'inputchannel',
-	'inputchannel': 'inputchannel',
-	'it':        'inputtype',
-	'intyp':     'inputtype',
-	'inputtype': 'inputtype',
-	'in':          'inputnumber',
-	'innum':       'inputnumber',
-	'inputnumber': 'inputnumber',
-	'iv':         'inputvalue',
-	'inval':      'inputvalue',
-	'inputvalue': 'inputvalue',
+  i: "input",
+  input: "input",
+  ic: "inputchannel",
+  inch: "inputchannel",
+  inputchannel: "inputchannel",
+  it: "inputtype",
+  intyp: "inputtype",
+  inputtype: "inputtype",
+  in: "inputnumber",
+  innum: "inputnumber",
+  inputnumber: "inputnumber",
+  iv: "inputvalue",
+  inval: "inputvalue",
+  inputvalue: "inputvalue",
 
-	'cc':               'continouscontrol',
-	'ctrl':             'continouscontrol',
-	'controlchange':    'continouscontrol',
-	'continouscontrol': 'continouscontrol',
-	'on':     'noteon',
-	'non':    'noteon',
-	'noteon': 'noteon',
-	'of':      'noteoff',
-	'noff':    'noteoff',
-	'noteoff': 'noteoff',
-	'pp':           'polypressure',
-	'poPr':         'polypressure',
-	'polypressure': 'polypressure',
-	'pc':            'programchange',
-	'prog':          'programchange',
-	'programchange': 'programchange',
-	'cp':              'channelpressure',
-	'chpr':            'channelpressure',
-	'channelpressure': 'channelpressure',
-	'pb':        'pitchbend',
-	'bend':      'pitchbend',
-	'pitchbend': 'pitchbend',
-	
-	'any': 'any'
+  cc: "continouscontrol",
+  ctrl: "continouscontrol",
+  controlchange: "continouscontrol",
+  continouscontrol: "continouscontrol",
+  on: "noteon",
+  non: "noteon",
+  noteon: "noteon",
+  of: "noteoff",
+  noff: "noteoff",
+  noteoff: "noteoff",
+  pp: "polypressure",
+  poPr: "polypressure",
+  polypressure: "polypressure",
+  pc: "programchange",
+  prog: "programchange",
+  programchange: "programchange",
+  cp: "channelpressure",
+  chpr: "channelpressure",
+  channelpressure: "channelpressure",
+  pb: "pitchbend",
+  bend: "pitchbend",
+  pitchbend: "pitchbend",
+
+  any: "any"
 };
 
 function T(t) {
-	if (dict[t]) {
-		return dict[t];
-	} else {
-		return undefined;
-	}
+  if (dict[t]) {
+    return dict[t];
+  } else {
+    return undefined;
+  }
 }
 
 class NoteOff {}
@@ -419,30 +398,29 @@ class ProgramChange {}
 class PitchBend {}
 class ChannelPressure {}
 
-
 class Collection {
-	constructor(initState) {
-		this.items = initState;
-	}
+  constructor(initState) {
+    this.items = initState;
+  }
 
-	add(item) {
-		if (this.array) {
-			this.items.push(item);
-		} else {
-			this.array = true;
-			this.items = [item];
-		}
-	}
+  add(item) {
+    if (this.array) {
+      this.items.push(item);
+    } else {
+      this.array = true;
+      this.items = [item];
+    }
+  }
 
-	forEach(func) {
-		if (this.array) {
-			this.items.forEach(item => {
-				func(item);
-			});
-		} else {
-			func(this.items);
-		}
-	}
+  forEach(func) {
+    if (this.array) {
+      this.items.forEach((item) => {
+        func(item);
+      });
+    } else {
+      func(this.items);
+    }
+  }
 }
 /*
 	[
@@ -457,242 +435,274 @@ class Collection {
 */
 
 class Message {
-	#iterator = 0;
+  #iterator = 0;
 
-	constructor(initState) {
-		this.channels = new Collection(initState);
-		this.numbers = new Collection(initState);
-		this.values = new Collection(initState);
-	}
-	
-	setChannel(channel) {
-		this.event.channel = channel;
-	};
-	setNumber(number) {
-		this.event.number = number;
-	};
-	setValue(value) {
-		this.event.value = value;
-	};
-	
-	create = {
-		noteon: function() {
-			this.event = new NoteOn;
-			this.setNumber = function(pitch) {
-				this.event.pitch = pitch;
-			};
-			this.setValue = function(velocity) {
-				this.event.velocity = velocity;
-			};
-		},
-		noteoff: function() {
-			this.event = new NoteOff;
-			this.setNumber = function(pitch) {
-				this.event.pitch = pitch;
-			};
-			this.setValue = function(velocity) {
-				this.event.velocity = velocity;
-			};
-		},
-		polypressure: function() {
-			this.event = new PolyPressure;
-			this.setNumber = function(pitch) {
-				this.event.pitch = pitch;
-			};
-		},
-		continouscontrol: function() {
-			this.event = new ControlChange;
-		},
-		programchange: function() {
-			this.event = new ProgramChange;
-			this.setValue = this.setNumber;
-		},
-		channelpressure: function() {
-			this.event = new ChannelPressure;
-			this.setNumber = function(dummy) {};
-		},
-		pitchbend: function() {
-			this.event = new PitchBend;
-			this.setNumber = function(dummy) {};
-		}
-	}; // create = {
-	
-	send() {
-		this.channels.forEach(channel => {
-			if (Array.isArray(channel)) {
-				channel = channel[this.#iterator % channel.length];
-			}
-			this.setChannel(channel);
-			
-			this.numbers.forEach(number => {
-				if (Array.isArray(number)) {
-					number = number[this.#iterator % number.length];
-				}
-				this.setNumber(number);
-				
-				this.values.forEach(value => {
-					if (Array.isArray(value)) {
-						value = value[this.#iterator % value.length];
-					}
-					this.setValue(value);
-					
-					this.event.send();
-				});
-			});
-		});
-		this.iterator++;
-	} // send()
+  constructor(initState) {
+    this.channels = new Collection(initState);
+    this.numbers = new Collection(initState);
+    this.values = new Collection(initState);
+  }
+
+  setChannel(channel) {
+    this.event.channel = channel;
+  }
+  setNumber(number) {
+    this.event.number = number;
+  }
+  setValue(value) {
+    this.event.value = value;
+  }
+
+  create = {
+    noteon: function () {
+      this.event = new NoteOn();
+      this.setNumber = function (pitch) {
+        this.event.pitch = pitch;
+      };
+      this.setValue = function (velocity) {
+        this.event.velocity = velocity;
+      };
+    },
+    noteoff: function () {
+      this.event = new NoteOff();
+      this.setNumber = function (pitch) {
+        this.event.pitch = pitch;
+      };
+      this.setValue = function (velocity) {
+        this.event.velocity = velocity;
+      };
+    },
+    polypressure: function () {
+      this.event = new PolyPressure();
+      this.setNumber = function (pitch) {
+        this.event.pitch = pitch;
+      };
+    },
+    continouscontrol: function () {
+      this.event = new ControlChange();
+    },
+    programchange: function () {
+      this.event = new ProgramChange();
+      this.setValue = this.setNumber;
+    },
+    channelpressure: function () {
+      this.event = new ChannelPressure();
+      this.setNumber = function (dummy) {};
+    },
+    pitchbend: function () {
+      this.event = new PitchBend();
+      this.setNumber = function (dummy) {};
+    }
+  }; // create = {
+
+  send() {
+    this.channels.forEach((channel) => {
+      if (Array.isArray(channel)) {
+        channel = channel[this.#iterator % channel.length];
+      }
+      this.setChannel(channel);
+
+      this.numbers.forEach((number) => {
+        if (Array.isArray(number)) {
+          number = number[this.#iterator % number.length];
+        }
+        this.setNumber(number);
+
+        this.values.forEach((value) => {
+          if (Array.isArray(value)) {
+            value = value[this.#iterator % value.length];
+          }
+          this.setValue(value);
+
+          this.event.send();
+        });
+      });
+    });
+    this.iterator++;
+  } // send()
 }
 
-var m, mappings = [];
+var m,
+  mappings = [];
 
 function createMappings() {
-	let lastObj;
-	let lastCase;
-	let lNr = 2;
-	MIDI_MAPPING.split(/\n/).forEach(line => {
-		line
-			.toLowerCase()
-			.replace(/\s*\/\/.*/g, '') // remove comments
-			.replace(/[;.<>"'={}&|!%^:_@?]/g, ' ') // replace symbols
-			.replace(/(\S)any/g, '$1 any') // space any
-			.replace(/\b([a-z]+)(?=\s|$)/g, function (m, a) {
-				let t = T(a);
-				if (t == undefined) {
-					throw new InputError('Sorry, I can\'t figure out what "' + a + '" means.', lNr);
-				}
-				return ' ' + t + ' ';
-			})
-			.replace(/\b([a-z#]+)(-?[0-9])\b/g, function (m, a, b) {
-				let pos = noteNames.indexOf(a);
-				if (pos != -1) {
-					let nr = pos;
-					nr += 12 * (5 - MIDDLE_C_NUMBER + Number(b));
-					if (nr < 0 || nr > 127) {
-						throw new InputError('Note "' + m + '" (' + nr + ') is out of MIDI-Range [0 ... 127]', lNr);
-					} else {
-						return nr;
-					}
-				} else {
-					throw new InputError('Couldn\'t find "' + a + '" of "' + m + '" in NOTE_NAMES', lNr);
-				}
-			})
-			.replace(/ *([-+*/,]) */g, '$1') // remove spaces around -+*/,
-			.replace(/\s+/g, ' ') // replace whitespaces
-			.replace(/\[\s*/g, '[') // remove spaces after [
-			.replace(/\s*\]/g, ']') // remove spaces before ]
-			.replace(/^ | $/g, '') // remove first and last space
-			.split(/ /)
-			.forEach(el => {
-				if (el == 'receive') {
-					lastObj = new Message();
-					lastCase = 'channels';
-					mappings.push(lastObj);
-				} else if (el == 'send') {
-					if (lastObj) {
-						lastObj = new Message(lastObj);
-					} else {
-						throw new InputError('No receiving message declared before sending', lNr);
-					}
-					lastCase = 'channels';
-				} else if (el == 'channel') {
-					lastCase = 'channels';
-				} else if (el == 'type') {
-					lastCase = 'type';
-				} else if (el == 'number') {
-					lastCase = 'numbers';
-				} else if (el == 'value') {
-					lastCase = 'values';
-				} else if (el == 'any') {
-					// Do nothing, since all inputs are any
-				} else if (lastCase === 'type') {
-					if (lastObj.create[el]) {
-						lastObj.create[el]();
-					} else {
-						throw new InputError('Cant find type "' + el + '"', lNr);
-					}
-					lastCase = 'numbers';
-				} else if (m = el.match(/^input.*/)) {
-					if (lastObj && lastObj.receiver) {
-						lastObj[lastCase].add(m);
-					} else {
-						throw new InputError('No receiving message declared before sending ' + m, lNr);
-					}
-				} else {
-					el = el.replace(/\[([^\]]+)\]/g, function (m, a) {
-						lastObj[lastCase].add(new Sequence(a, lNr));
-						return '';
-					});
-					el = el.replace(/,,/, ',');
-					el = el.split(/,/);
-					el.forEach(p => {
-						let range = p.match(/(-?[0-9]+)-(-?[0-9]+)/);
-						if (range) {
-							p = new Range(range[1], range[2], lNr);
-						}
-					});
-				}
-			});
-		++lNr;
-	});
+  let lastObj;
+  let lastCase;
+  let lNr = 2;
+  MIDI_MAPPING.split(/\n/).forEach((line) => {
+    line
+      .toLowerCase()
+      .replace(/\s*\/\/.*/g, "") // remove comments
+      .replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
+      .replace(/(\S)any/g, "$1 any") // space any
+      .replace(/\b([a-z]+)(?=\s|$)/g, function (m, a) {
+        let t = T(a);
+        if (t === undefined) {
+          throw new InputError(
+            "Sorry, I can't figure out what \"" + a + '" means.',
+            lNr
+          );
+        }
+        return " " + t + " ";
+      })
+      .replace(/\b([a-z#]+)(-?[0-9])\b/g, function (m, a, b) {
+        let pos = noteNames.indexOf(a);
+        if (pos !== -1) {
+          let nr = pos;
+          nr += 12 * (5 - MIDDLE_C_NUMBER + Number(b));
+          if (nr < 0 || nr > 127) {
+            throw new InputError(
+              'Note "' + m + '" (' + nr + ") is out of MIDI-Range [0 ... 127]",
+              lNr
+            );
+          } else {
+            return nr;
+          }
+        } else {
+          throw new InputError(
+            "Couldn't find \"" + a + '" of "' + m + '" in NOTE_NAMES',
+            lNr
+          );
+        }
+      })
+      .replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
+      .replace(/\s+/g, " ") // replace whitespaces
+      .replace(/\[\s*/g, "[") // remove spaces after [
+      .replace(/\s*\]/g, "]") // remove spaces before ]
+      .replace(/^ | $/g, "") // remove first and last space
+      .split(/ /)
+      .forEach((el) => {
+        if (el === "receive") {
+          lastObj = new Message();
+          lastCase = "channels";
+          mappings.push(lastObj);
+        } else if (el === "send") {
+          if (lastObj) {
+            lastObj = new Message(lastObj);
+          } else {
+            throw new InputError(
+              "No receiving message declared before sending",
+              lNr
+            );
+          }
+          lastCase = "channels";
+        } else if (el === "channel") {
+          lastCase = "channels";
+        } else if (el === "type") {
+          lastCase = "type";
+        } else if (el === "number") {
+          lastCase = "numbers";
+        } else if (el === "value") {
+          lastCase = "values";
+        } else if (el === "any") {
+          // Do nothing, since all inputs are any
+        } else if (lastCase === "type") {
+          if (lastObj.create[el]) {
+            lastObj.create[el]();
+          } else {
+            throw new InputError('Cant find type "' + el + '"', lNr);
+          }
+          lastCase = "numbers";
+        } else if (el.match(/^input.*/)) {
+          if (lastObj && lastObj.receiver) {
+            lastObj[lastCase].add(m);
+          } else {
+            throw new InputError(
+              "No receiving message declared before sending " + m,
+              lNr
+            );
+          }
+        } else {
+          el = el.replace(/\[([^\]]+)\]/g, function (m, a) {
+            lastObj[lastCase].add(new Sequence(a, lNr));
+            return "";
+          });
+          el = el.replace(/,,/, ",");
+          el = el.split(/,/);
+          el.forEach((p) => {
+            let range = p.match(/(-?[0-9]+)-(-?[0-9]+)/);
+            if (range) {
+              p = new Range(range[1], range[2], lNr);
+            }
+          });
+        }
+      });
+    ++lNr;
+  });
 }
 
 class InputError extends Error {
   constructor(msg, lNr = 0) {
-  	if (lNr) {
-    super('[Line: ' + lNr + '] ' + msg);
+    if (lNr) {
+      super("[Line: " + lNr + "] " + msg);
     } else {
-    	super(msg);
+      super(msg);
     }
-    this.name = 'Input Error';
+    this.name = "Input Error";
   }
 }
 
 class Range {
-	constructor (start, end, lNr = 0) {
-		if (isNaN(start)) {
-			throw new InputError('Range "' + start + '-' + end + '": "' + start + '" is not a number');	
-		}else if (isNaN(end)) {
-			throw new InputError('Range "' + start + '-' + end + '": "' + end + '" is not a number');
-		}else if (Number(start) > Number(end)) {
-			throw new InputError('Range "' + start + '-' + end + '": "' + start + '" is greater than "' + end + '"');
-		}
-		this.start = Number(start);
-		this.end = Number(end);
-	}
+  constructor(start, end, lNr = 0) {
+    if (isNaN(start)) {
+      throw new InputError(
+        'Range "' + start + "-" + end + '": "' + start + '" is not a number'
+      );
+    } else if (isNaN(end)) {
+      throw new InputError(
+        'Range "' + start + "-" + end + '": "' + end + '" is not a number'
+      );
+    } else if (Number(start) > Number(end)) {
+      throw new InputError(
+        'Range "' +
+          start +
+          "-" +
+          end +
+          '": "' +
+          start +
+          '" is greater than "' +
+          end +
+          '"'
+      );
+    }
+    this.start = Number(start);
+    this.end = Number(end);
+  }
 
-	withinRange(n) {
-		return (Number(n) >= this.start && Number(n) <= this.end);
-	}
-	forEach(func) {
-		for (let i = this.start; i <= this.end	; ++i) {
-			func(i);	
-		}
-	}
+  withinRange(n) {
+    return Number(n) >= this.start && Number(n) <= this.end;
+  }
+  forEach(func) {
+    for (let i = this.start; i <= this.end; ++i) {
+      func(i);
+    }
+  }
 }
 
 class Sequence {
-	constructor(string, lNr = 0) {
-		this.iterator = -1;
-		this.values = string.split(/,/);
-		this.values.forEach(v => {
-			let m = v.match(/(-?[^-]+)-(-?[^-])/);
-			if (m) {
-				v = new Range(m[1], m[2]);
-			} else if (isNaN(v)) {
-				throw new InputError('Sequence [' + string + ']: "' + v + '" is not a number');
-			}
-		});
-	}
+  constructor(string, lNr = 0) {
+    this.iterator = -1;
+    this.values = string.split(/,/);
+    this.values.forEach((v) => {
+      let m = v.match(/(-?[^-]+)-(-?[^-])/);
+      if (m) {
+        v = new Range(m[1], m[2]);
+      } else if (isNaN(v)) {
+        throw new InputError(
+          "Sequence [" + string + ']: "' + v + '" is not a number'
+        );
+      }
+    });
+  }
 
-	get get() {
-		this.iterator = (this.iterator + 1) % this.values.length;
-		return this.values[this.iterator]
-	}
+  get get() {
+    this.iterator = (this.iterator + 1) % this.values.length;
+    return this.values[this.iterator];
+  }
 }
 
 // DEBUG >>
-console.log('Starting to create mapping...');
+console.log("Starting to create mapping...");
 MIDI_MAPPING = MIDI_MAPPING_EXAMPLE;
 // << DEBUG
 
@@ -700,28 +710,28 @@ createMappings();
 const mappingKeys = Object.keys(mappings);
 
 function HandleMIDI(event) {
-	let key = RegExp(event.toString()
-		.replace(/\[[^\]\[]+\]/,'') // remove information in brackets
-		.replace(/:(\d+)/g,':(?:\\d+|any)')); // add any to numbers
-	let mappings = mappingKeys.filter(function (mapping) {
-		return mapping.match(key);
-	});
-	if (mappings.length) {
-		if (PASS_THROUGH_INPUT) {
-			event.send();	
-		}
-		mappings.forEach(messages => {
-			messages.forEach(message => {
-				message.send();
-			});
-		}); 
-	} else if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
-		event.send();
-	}
+  let key = RegExp(
+    event
+      .toString()
+      .replace(/\[[^\][]+\]/, "") // remove information in brackets
+      .replace(/:(\d+)/g, ":(?:\\d+|any)")
+  ); // add any to numbers
+  let mappings = mappingKeys.filter(function (mapping) {
+    return mapping.match(key);
+  });
+  if (mappings.length) {
+    if (PASS_THROUGH_INPUT) {
+      event.send();
+    }
+    mappings.forEach((messages) => {
+      messages.forEach((message) => {
+        message.send();
+      });
+    });
+  } else if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
+    event.send();
+  }
 }
-
-
-
 
 /*
 
