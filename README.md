@@ -27,3 +27,8 @@ Test JavaScript with instant code execution. All settings (except auto-run) are 
 * `console.log(string)`
 * `log(string)` = `console.log(string)`
 * `logs(object)` = `console.log(JSON.stringify(object))`(Usefull for showing content of objects)
+
+# MainStage Scripts
+Some usefull scripts to make the most of the scripter-plugin in MainStage. https://support.apple.com/de-de/guide/mainstage/lgcecc16550d/mac
+
+## midiMapper
