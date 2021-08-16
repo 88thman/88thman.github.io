@@ -202,7 +202,6 @@ Pro-Tips:
 
 /////////////////////////// EXAMPLE (can be deleted) ///////////////////////////
 // TODO Put Example in comment section
-
 var MIDI_MAPPING_EXAMPLE = `
 
 	receive
@@ -702,7 +701,7 @@ class Sequence {
 }
 
 // DEBUG >>
-console.log("Starting to create mapping...");
+Trace("Starting to create mapping...");
 MIDI_MAPPING = MIDI_MAPPING_EXAMPLE;
 // << DEBUG
 
@@ -731,6 +730,10 @@ function HandleMIDI(event) {
   } else if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
     event.send();
   }
+}
+
+function Trace(string) {
+  console.log(string);
 }
 
 /*
