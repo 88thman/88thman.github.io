@@ -1,7 +1,7 @@
-# 88thman - Helpers
-## Test JavaScript: http://88thman.github.io/js.html
+# Test JavaScript
+http://88thman.github.io/js.html
 Test JavaScript with instant code execution. All settings (except auto-run) are stored in your browsers storage, so you can reload or close the window.
-### Buttons
+## Buttons
 1. Loop-Protection
 
    Toggle while-loop protection on and off.
@@ -21,7 +21,7 @@ Test JavaScript with instant code execution. All settings (except auto-run) are 
 
    Rotate editor and console 90°
 4. Light- or Darkmode
-### Functions
+## Functions
 * Errors will be shown instantly, also the executed code.
 * `console.log(string)`
 * `log(string)` = `console.log(string)`
