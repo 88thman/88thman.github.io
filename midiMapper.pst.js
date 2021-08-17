@@ -99,8 +99,8 @@ Send-MIDI-Value:
 		"input" depends on it's position. (Below are alternatives)
 
 		recieve: channel any; type continousControl; number 113;   value any
-		                  |               |                  |            |
-		                  V               V                  V            V
+								|               |                  |            |
+								V               V                  V            V
 		send:   channel input;     type input;      number input; value input
 
 Special Send-MIDI-Values:
@@ -163,8 +163,8 @@ Pro-Tips:
 			send:    channel 4
 			
 	b) You can skip command names as long as you stay within the hierarchy.
-	   Skipped, recieiving commands will include any incoming channel, type, number and value.
-	   Skipped, sending commands will inherit input channel, type, number and value.
+		Skipped, recieiving commands will include any incoming channel, type, number and value.
+		Skipped, sending commands will inherit input channel, type, number and value.
 
 		Instead of:
 			r ic:16 it:cc in:11 iv:any
@@ -434,12 +434,24 @@ class Collection {
 */
 
 class Message {
+  static HIERARCHY = ["event", "channels", "numbers", "values"];
   #iterator = 0;
 
   constructor(initState) {
+    this.initState = initState;
     this.channels = new Collection(initState);
     this.numbers = new Collection(initState);
     this.values = new Collection(initState);
+  }
+
+  clone(depth) {
+    let m = new Message(this.initState);
+    let i = this.HIERARCHY.indexOf(depth) + 1;
+    while (i) {
+      --i;
+      m[this.HIERARCHY[i]] = this[this.HIERARCHY[i]]; // TODO clone object
+    }
+    return m;
   }
 
   setChannel(channel) {
@@ -524,106 +536,123 @@ class Message {
 var m,
   mappings = [];
 
+function interpreteLine(line, lNr) {
+  return line
+    .toLowerCase()
+    .replace(/\s*\/\/.*/g, "") // remove comments
+    .replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
+    .replace(/(\S)any/g, "$1 any") // space any
+    .replace(/\b([a-z]+)(?=\s|$)/g, (_m, a) => {
+      let t = T(a);
+      if (t === undefined) {
+        throw new InputError(
+          "Sorry, I can't figure out what \"" + a + '" means.',
+          lNr
+        );
+      }
+      return " " + t + " ";
+    })
+    .replace(/\b([a-z#]+)(-?[0-9])\b/g, function (m, a, b) {
+      let pos = noteNames.indexOf(a);
+      if (pos !== -1) {
+        let nr = pos;
+        nr += 12 * (5 - MIDDLE_C_NUMBER + Number(b));
+        if (nr < 0 || nr > 127) {
+          throw new InputError(
+            'Note "' + m + '" (' + nr + ") is out of MIDI-Range [0 ... 127]",
+            lNr
+          );
+        } else {
+          return nr;
+        }
+      } else {
+        throw new InputError(
+          "Couldn't find \"" + a + '" of "' + m + '" in NOTE_NAMES',
+          lNr
+        );
+      }
+    })
+    .replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
+    .replace(/\s+/g, " ") // replace whitespaces
+    .replace(/\[\s*/g, "[") // remove spaces after [
+    .replace(/\s*\]/g, "]") // remove spaces before ]
+    .replace(/^ | $/g, ""); // remove first and last space
+}
+
+function interpretCommand(cmd, lNr) {
+  if (cmd.match(/^input.*/)) {
+  }
+  cmd = cmd.replace(/\[([^\]]+)\]/g, function (m, a) {
+    lastObj[lastCase].add(new Sequence(a, lNr));
+    return "";
+  });
+
+  cmd = cmd.replace(/,,/, ",");
+  cmd = cmd.split(/,/);
+  cmd.forEach((p) => {
+    let range = p.match(/(-?[0-9]+)-(-?[0-9]+)/);
+    if (range) {
+      p = new Range(range[1], range[2], lNr);
+    }
+  });
+}
+
+class Mapping {
+  receive = [];
+  send = [];
+}
+
 function createMappings() {
-  let lastObj;
-  let lastCase;
+  let mapping = new Mapping(),
+    message,
+    hierarchy;
   let lNr = 2;
   MIDI_MAPPING.split(/\n/).forEach((line) => {
-    line
-      .toLowerCase()
-      .replace(/\s*\/\/.*/g, "") // remove comments
-      .replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
-      .replace(/(\S)any/g, "$1 any") // space any
-      .replace(/\b([a-z]+)(?=\s|$)/g, function (m, a) {
-        let t = T(a);
-        if (t === undefined) {
-          throw new InputError(
-            "Sorry, I can't figure out what \"" + a + '" means.',
-            lNr
-          );
-        }
-        return " " + t + " ";
-      })
-      .replace(/\b([a-z#]+)(-?[0-9])\b/g, function (m, a, b) {
-        let pos = noteNames.indexOf(a);
-        if (pos !== -1) {
-          let nr = pos;
-          nr += 12 * (5 - MIDDLE_C_NUMBER + Number(b));
-          if (nr < 0 || nr > 127) {
-            throw new InputError(
-              'Note "' + m + '" (' + nr + ") is out of MIDI-Range [0 ... 127]",
-              lNr
-            );
-          } else {
-            return nr;
-          }
-        } else {
-          throw new InputError(
-            "Couldn't find \"" + a + '" of "' + m + '" in NOTE_NAMES',
-            lNr
-          );
-        }
-      })
-      .replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
-      .replace(/\s+/g, " ") // replace whitespaces
-      .replace(/\[\s*/g, "[") // remove spaces after [
-      .replace(/\s*\]/g, "]") // remove spaces before ]
-      .replace(/^ | $/g, "") // remove first and last space
+    interpreteLine(line, lNr)
       .split(/ /)
-      .forEach((el) => {
-        if (el === "receive") {
-          lastObj = new Message();
-          lastCase = "channels";
-          mappings.push(lastObj);
-        } else if (el === "send") {
-          if (lastObj) {
-            lastObj = new Message(lastObj);
+      .forEach((cmd) => {
+        if (cmd === "receive") {
+          message = new Message("any");
+          mapping = new Mapping();
+          mapping.receive = [message];
+          mapping.send = [];
+          mappings.push(mapping);
+          hierarchy = "???";
+        } else if (cmd === "send") {
+          if (mapping.receive.length) {
+            message = new Message("input");
+            mapping.send.push(message);
+            hierarchy = "???";
           } else {
             throw new InputError(
               "No receiving message declared before sending",
               lNr
             );
           }
-          lastCase = "channels";
-        } else if (el === "channel") {
-          lastCase = "channels";
-        } else if (el === "type") {
-          lastCase = "type";
-        } else if (el === "number") {
-          lastCase = "numbers";
-        } else if (el === "value") {
-          lastCase = "values";
-        } else if (el === "any") {
-          // Do nothing, since all inputs are any
-        } else if (lastCase === "type") {
-          if (lastObj.create[el]) {
-            lastObj.create[el]();
+        } else if (cmd === "type") {
+          hierarchy = "type";
+        } else if (cmd === "channel") {
+          hierarchy = "channels";
+        } else if (cmd === "number") {
+          hierarchy = "numbers";
+        } else if (cmd === "value") {
+          hierarchy = "values";
+        } else if (hierarchy === "type") {
+          if (message.create[cmd]) {
+            message.create[cmd]();
           } else {
-            throw new InputError('Cant find type "' + el + '"', lNr);
+            throw new InputError('Cant find type "' + cmd + '"', lNr);
           }
-          lastCase = "numbers";
-        } else if (el.match(/^input.*/)) {
-          if (lastObj && lastObj.receiver) {
-            lastObj[lastCase].add(m);
-          } else {
-            throw new InputError(
-              "No receiving message declared before sending " + m,
-              lNr
-            );
-          }
-        } else {
-          el = el.replace(/\[([^\]]+)\]/g, function (m, a) {
-            lastObj[lastCase].add(new Sequence(a, lNr));
-            return "";
-          });
-          el = el.replace(/,,/, ",");
-          el = el.split(/,/);
-          el.forEach((p) => {
-            let range = p.match(/(-?[0-9]+)-(-?[0-9]+)/);
-            if (range) {
-              p = new Range(range[1], range[2], lNr);
-            }
-          });
+          hierarchy = "channels";
+        } else if (hierarchy === "channels") {
+          message.channels.add(interpretCommand(cmd, lNr));
+          hierarchy = "numbers";
+        } else if (hierarchy === "numbers") {
+          message.numbers.add(interpretCommand(cmd, lNr));
+          hierarchy = "values";
+        } else if (hierarchy === "values") {
+          message.numbers.add(interpretCommand(cmd, lNr));
+          //hierarchy = "values";
         }
       });
     ++lNr;
