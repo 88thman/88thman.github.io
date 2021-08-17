@@ -580,19 +580,22 @@ function interpreteLine(line, lNr) {
 }
 
 function interpretCommand(cmd, lNr) {
-  if (cmd.match(/^input.*/)) {
-  }
-  cmd = cmd.replace(/\[([^\]]+)\]/g, function (m, a) {
-    lastObj[lastCase].add(new Sequence(a, lNr));
+  let array = [];
+  cmd = cmd.replace(/\[([^\]]+)\]/g, function (_m, a) {
+    array.push(new Sequence(a, lNr));
     return "";
   });
 
   cmd = cmd.replace(/,,/, ",");
   cmd = cmd.split(/,/);
+
   cmd.forEach((p) => {
     let range = p.match(/(-?[0-9]+)-(-?[0-9]+)/);
     if (range) {
-      p = new Range(range[1], range[2], lNr);
+      array.push(new Range(range[1], range[2], lNr));
+    }
+
+    if (p.match(/^input.*/)) {
     }
   });
 }
