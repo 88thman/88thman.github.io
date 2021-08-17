@@ -435,7 +435,7 @@ class Collection {
 
 class Message {
 	static HIERARCHY = ["event", "channels", "numbers", "values"];
-	#iterator = 0;
+	iterator = 0;
 
 	constructor(initState) {
 		this.eventType = initState;
@@ -510,19 +510,19 @@ class Message {
 	send() {
 		this.channels.forEach((channel) => {
 			if (Array.isArray(channel)) {
-				channel = channel[this.#iterator % channel.length];
+				channel = channel[this.iterator % channel.length];
 			}
 			this.setChannel(channel);
 
 			this.numbers.forEach((number) => {
 				if (Array.isArray(number)) {
-					number = number[this.#iterator % number.length];
+					number = number[this.iterator % number.length];
 				}
 				this.setNumber(number);
 
 				this.values.forEach((value) => {
 					if (Array.isArray(value)) {
-						value = value[this.#iterator % value.length];
+						value = value[this.iterator % value.length];
 					}
 					this.setValue(value);
 
@@ -580,7 +580,7 @@ function interpreteLine(line, lNr) {
 		.replace(/^ | $/g, ""); // remove first and last space
 }
 
-function interpretCommand(cmd, lNr) {
+function convertCommand(cmd, lNr) {
 	
 	let array = [];
 
@@ -617,65 +617,65 @@ class Mapping {
 	send = [];
 }
 
+
 function createMappings() {
-	let mapping = new Mapping(),
-		message,
-		hierarchy;
-	let lNr = 2;
+	function interpreteCommand(cmd) {
+		if (cmd === "receive") {
+			message = new Message("any");
+			mapping = new Mapping();
+			mapping.receive = [message];
+			mapping.send = [];
+			mappings.push(mapping);
+			hierarchy = "channels";
+		} else if (cmd === "send" || hierarchy === "send") { // what if autosend call this function again?
+			if (mapping.receive.length) {
+				message = new Message("input");
+				mapping.send.push(message);
+				hierarchy = "channels";
+				if (cmd !== "send") {
+					interpreteCommand(cmd);
+				}
+			} else {
+				throw new InputError(
+					"No receiving message declared before sending",
+					lNr
+				);
+			}
+		} else if (cmd === "type") {
+			hierarchy = "type";
+		} else if (cmd === "channel") {
+			hierarchy = "channels";
+		} else if (cmd === "number") {
+			hierarchy = "numbers";
+		} else if (cmd === "value") {
+			hierarchy = "values";
+		} else if (hierarchy === "type") {
+			if (cmd === "input" || cmd === "any") {
+				// Do nothing since input and any by default
+			} else if (message.create[cmd]) {
+				message.create[cmd]();
+				message.eventType = cmd;
+			} else {
+				throw new InputError(`Cant find type "${cmd}"`, lNr);
+			}
+			hierarchy = "channels";
+		} else if (hierarchy === "channels") {
+			message.channels = convertCommand(cmd, lNr);
+			hierarchy = "numbers";
+		} else if (hierarchy === "numbers") {
+			message.numbers = convertCommand(cmd, lNr);
+			hierarchy = "values";
+		} else if (hierarchy === "values") {
+			message.numbers = convertCommand(cmd, lNr);
+			hierarchy = "send";
+		}
+	}
+
+	let message, hierarchy, lNr = 2, mapping = new Mapping();
 	MIDI_MAPPING.split(/\n/).forEach((line) => {
 		interpreteLine(line, lNr)
 			.split(/ /)
-			.forEach((cmd) => {
-				if (cmd === "receive") {
-					message = new Message("any");
-					mapping = new Mapping();
-					mapping.receive = [message];
-					mapping.send = [];
-					mappings.push(mapping);
-					hierarchy = "channels";
-				} else if (cmd === "send" || hierarchy === "send") { // what if autosend call this function again?
-					if (mapping.receive.length) {
-						message = new Message("input");
-						mapping.send.push(message);
-						hierarchy = "channels";
-						if (cmd !== "send") {
-							interpreteLine(cmd, lNr);
-						}
-					} else {
-						throw new InputError(
-							"No receiving message declared before sending",
-							lNr
-						);
-					}
-				} else if (cmd === "type") {
-					hierarchy = "type";
-				} else if (cmd === "channel") {
-					hierarchy = "channels";
-				} else if (cmd === "number") {
-					hierarchy = "numbers";
-				} else if (cmd === "value") {
-					hierarchy = "values";
-				} else if (hierarchy === "type") {
-					if (cmd === "input" || cmd === "any") {
-						// Do nothing since input and any by default
-					} else if (message.create[cmd]) {
-						message.create[cmd]();
-						message.eventType = cmd;
-					} else {
-						throw new InputError(`Cant find type "${cmd}"`, lNr);
-					}
-					hierarchy = "channels";
-				} else if (hierarchy === "channels") {
-					message.channels = interpretCommand(cmd, lNr);
-					hierarchy = "numbers";
-				} else if (hierarchy === "numbers") {
-					message.numbers = interpretCommand(cmd, lNr);
-					hierarchy = "values";
-				} else if (hierarchy === "values") {
-					message.numbers = interpretCommand(cmd, lNr);
-					hierarchy = "send";
-				}
-			});
+			.forEach(interpreteCommand);
 		++lNr;
 	});
 }
