@@ -102,7 +102,7 @@ Send-MIDI-Value:
 								|               |                  |            |
 								V               V                  V            V
 		send:   channel input;     type input;      number input; value input
-
+TODO Reihenfolge type -> channel -> ...
 Special Send-MIDI-Values:
 	
 	To send a different inputValue than the positional, use following, absolute commands:
@@ -546,7 +546,7 @@ function interpreteLine(line, lNr) {
 			let t = T(a);
 			if (t === undefined) {
 				throw new InputError(
-					"Sorry, I can't figure out what \"" + a + '" means.',
+					`Sorry, I can't figure out what "${a}" means.`,
 					lNr
 				);
 			}
@@ -559,7 +559,7 @@ function interpreteLine(line, lNr) {
 				nr += 12 * (5 - MIDDLE_C_NUMBER + Number(b));
 				if (nr < 0 || nr > 127) {
 					throw new InputError(
-						'Note "' + m + '" (' + nr + ") is out of MIDI-Range [0 ... 127]",
+						`Note "${m}" (${nr}) is out of MIDI-Range [0 ... 127]`,
 						lNr
 					);
 				} else {
@@ -567,7 +567,7 @@ function interpreteLine(line, lNr) {
 				}
 			} else {
 				throw new InputError(
-					"Couldn't find \"" + a + '" of "' + m + '" in NOTE_NAMES',
+					`Couldn't find "${a}" of "${m}" in NOTE_NAMES`,
 					lNr
 				);
 			}
@@ -603,7 +603,7 @@ function interpretCommand(cmd, lNr) {
 			} else if (p.match(/^input(?:|type|channel|number|value)$/)) {
 				array.push(p);
 			} else {
-				throw new InputError(`Sorry, couldn't interpret "${p}"`, lNr);
+				throw new InputError(`Sorry, couldn't interpret command "${p}"`, lNr);
 			}
 		});
 
@@ -653,10 +653,12 @@ function createMappings() {
 				} else if (hierarchy === "type") {
 					if (cmd === "input") {
 						message.eventType = "input"; // TODO work with it
+					} else if (cmd === "any") {
+						message.eventType = "any"; // TODO work with it
 					} else if (message.create[cmd]) {
 						message.create[cmd]();
 					} else {
-						throw new InputError('Cant find type "' + cmd + '"', lNr);
+						throw new InputError(`Cant find type "${cmd}"`, lNr);
 					}
 					hierarchy = "channels";
 				} else if (hierarchy === "channels") {
@@ -677,7 +679,7 @@ function createMappings() {
 class InputError extends Error {
 	constructor(msg, lNr = 0) {
 		if (lNr) {
-			super("[Line: " + lNr + "] " + msg);
+			super(`[Line: ${lNr}] ${msg}`);
 		} else {
 			super(msg);
 		}
@@ -689,23 +691,15 @@ class Range {
 	constructor(start, end, lNr = 0) {
 		if (isNaN(start)) {
 			throw new InputError(
-				'Range "' + start + "-" + end + '": "' + start + '" is not a number'
+				`Range "${start}"-"${end}": "${start}" is not a number`
 			);
 		} else if (isNaN(end)) {
 			throw new InputError(
-				'Range "' + start + "-" + end + '": "' + end + '" is not a number'
+				`Range "${start}"-"${end}": "${end}" is not a number`
 			);
 		} else if (Number(start) > Number(end)) {
 			throw new InputError(
-				'Range "' +
-				start +
-				"-" +
-				end +
-				'": "' +
-				start +
-				'" is greater than "' +
-				end +
-				'"'
+				`Range "${start}"-"${end}": "${start}" is greater than "${end}"`
 			);
 		}
 		this.start = Number(start);
@@ -732,7 +726,7 @@ class Sequence {
 				v = new Range(m[1], m[2]);
 			} else if (isNaN(v)) {
 				throw new InputError(
-					"Sequence [" + string + ']: "' + v + '" is not a number'
+					`Sequence [${string}]: "${v}" is not a number`
 				);
 			}
 		});
