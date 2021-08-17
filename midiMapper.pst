@@ -580,6 +580,7 @@ function interpreteLine(line, lNr) {
 }
 
 function interpretCommand(cmd, lNr) {
+	
 	let array = [];
 
 	cmd = cmd.replace(/\[([^\]]+)\]/g, function (_m, a) {
