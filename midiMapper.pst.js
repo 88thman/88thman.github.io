@@ -323,103 +323,103 @@ var MIDI_MAPPING_EXAMPLE = `
 /////////////////// CODE - DO NOT EDIT (unless you know how) ///////////////////
 var noteNames = NOTE_NAMES.replace(/\s/g, "").split(/,/);
 var dict = {
-  r: "receive",
-  rec: "receive",
-  receive: "receive",
-  s: "send",
-  snd: "send",
-  send: "send",
-  ch: "channel",
-  channel: "channel",
-  t: "type",
-  typ: "type",
-  type: "type",
-  nr: "number",
-  number: "number",
-  v: "value",
-  val: "value",
-  value: "value",
+	r: "receive",
+	rec: "receive",
+	receive: "receive",
+	s: "send",
+	snd: "send",
+	send: "send",
+	ch: "channel",
+	channel: "channel",
+	t: "type",
+	typ: "type",
+	type: "type",
+	nr: "number",
+	number: "number",
+	v: "value",
+	val: "value",
+	value: "value",
 
-  i: "input",
-  input: "input",
-  ic: "inputchannel",
-  inch: "inputchannel",
-  inputchannel: "inputchannel",
-  it: "inputtype",
-  intyp: "inputtype",
-  inputtype: "inputtype",
-  in: "inputnumber",
-  innum: "inputnumber",
-  inputnumber: "inputnumber",
-  iv: "inputvalue",
-  inval: "inputvalue",
-  inputvalue: "inputvalue",
+	i: "input",
+	input: "input",
+	ic: "inputchannel",
+	inch: "inputchannel",
+	inputchannel: "inputchannel",
+	it: "inputtype",
+	intyp: "inputtype",
+	inputtype: "inputtype",
+	in: "inputnumber",
+	innum: "inputnumber",
+	inputnumber: "inputnumber",
+	iv: "inputvalue",
+	inval: "inputvalue",
+	inputvalue: "inputvalue",
 
-  cc: "continouscontrol",
-  ctrl: "continouscontrol",
-  controlchange: "continouscontrol",
-  continouscontrol: "continouscontrol",
-  on: "noteon",
-  non: "noteon",
-  noteon: "noteon",
-  of: "noteoff",
-  noff: "noteoff",
-  noteoff: "noteoff",
-  pp: "polypressure",
-  poPr: "polypressure",
-  polypressure: "polypressure",
-  pc: "programchange",
-  prog: "programchange",
-  programchange: "programchange",
-  cp: "channelpressure",
-  chpr: "channelpressure",
-  channelpressure: "channelpressure",
-  pb: "pitchbend",
-  bend: "pitchbend",
-  pitchbend: "pitchbend",
+	cc: "continouscontrol",
+	ctrl: "continouscontrol",
+	controlchange: "continouscontrol",
+	continouscontrol: "continouscontrol",
+	on: "noteon",
+	non: "noteon",
+	noteon: "noteon",
+	of: "noteoff",
+	noff: "noteoff",
+	noteoff: "noteoff",
+	pp: "polypressure",
+	poPr: "polypressure",
+	polypressure: "polypressure",
+	pc: "programchange",
+	prog: "programchange",
+	programchange: "programchange",
+	cp: "channelpressure",
+	chpr: "channelpressure",
+	channelpressure: "channelpressure",
+	pb: "pitchbend",
+	bend: "pitchbend",
+	pitchbend: "pitchbend",
 
-  any: "any"
+	any: "any"
 };
 
 function T(t) {
-  if (dict[t]) {
-    return dict[t];
-  } else {
-    return undefined;
-  }
+	if (dict[t]) {
+		return dict[t];
+	} else {
+		return undefined;
+	}
 }
 
-class NoteOff {}
-class NoteOn {}
-class PolyPressure {}
-class ControlChange {}
-class ProgramChange {}
-class PitchBend {}
-class ChannelPressure {}
+class NoteOff { }
+class NoteOn { }
+class PolyPressure { }
+class ControlChange { }
+class ProgramChange { }
+class PitchBend { }
+class ChannelPressure { }
 
 /*
 class Collection {
   constructor(initState) {
-    this.items = initState;
+	 this.items = initState;
   }
 
   add(item) {
-    if (this.array) {
-      this.items.push(item);
-    } else {
-      this.array = true;
-      this.items = [item];
-    }
+	 if (this.array) {
+		this.items.push(item);
+	 } else {
+		this.array = true;
+		this.items = [item];
+	 }
   }
 
   forEach(func) {
-    if (this.array) {
-      this.items.forEach((item) => {
-        func(item);
-      });
-    } else {
-      func(this.items);
-    }
+	 if (this.array) {
+		this.items.forEach((item) => {
+		  func(item);
+		});
+	 } else {
+		func(this.items);
+	 }
   }
 }
 	[
@@ -434,308 +434,308 @@ class Collection {
 */
 
 class Message {
-  static HIERARCHY = ["event", "channels", "numbers", "values"];
-  #iterator = 0;
+	static HIERARCHY = ["event", "channels", "numbers", "values"];
+	#iterator = 0;
 
-  constructor(initState) {
-    this.initState = initState;
-    this.channels = initState;
-    this.numbers = initState;
-    this.values = initState;
-  }
+	constructor(initState) {
+		this.initState = initState;
+		this.channels = initState;
+		this.numbers = initState;
+		this.values = initState;
+	}
 
-  clone(depth) {
-    let m = new Message(this.initState);
-    let i = this.HIERARCHY.indexOf(depth) + 1;
-    while (i) {
-      --i;
-      m[this.HIERARCHY[i]] = this[this.HIERARCHY[i]]; // TODO clone object
-    }
-    return m;
-  }
+	clone(depth) {
+		let m = new Message(this.initState);
+		let i = this.HIERARCHY.indexOf(depth) + 1;
+		while (i) {
+			--i;
+			m[this.HIERARCHY[i]] = this[this.HIERARCHY[i]]; // TODO clone object
+		}
+		return m;
+	}
 
-  setChannel(channel) {
-    this.event.channel = channel;
-  }
-  setNumber(number) {
-    this.event.number = number;
-  }
-  setValue(value) {
-    this.event.value = value;
-  }
+	setChannel(channel) {
+		this.event.channel = channel;
+	}
+	setNumber(number) {
+		this.event.number = number;
+	}
+	setValue(value) {
+		this.event.value = value;
+	}
 
-  create = {
-    noteon: function () {
-      this.event = new NoteOn();
-      this.setNumber = function (pitch) {
-        this.event.pitch = pitch;
-      };
-      this.setValue = function (velocity) {
-        this.event.velocity = velocity;
-      };
-    },
-    noteoff: function () {
-      this.event = new NoteOff();
-      this.setNumber = function (pitch) {
-        this.event.pitch = pitch;
-      };
-      this.setValue = function (velocity) {
-        this.event.velocity = velocity;
-      };
-    },
-    polypressure: function () {
-      this.event = new PolyPressure();
-      this.setNumber = function (pitch) {
-        this.event.pitch = pitch;
-      };
-    },
-    continouscontrol: function () {
-      this.event = new ControlChange();
-    },
-    programchange: function () {
-      this.event = new ProgramChange();
-      this.setValue = this.setNumber;
-    },
-    channelpressure: function () {
-      this.event = new ChannelPressure();
-      this.setNumber = function (dummy) {};
-    },
-    pitchbend: function () {
-      this.event = new PitchBend();
-      this.setNumber = function (dummy) {};
-    }
-  }; // create = {
+	create = {
+		noteon: function () {
+			this.event = new NoteOn();
+			this.setNumber = function (pitch) {
+				this.event.pitch = pitch;
+			};
+			this.setValue = function (velocity) {
+				this.event.velocity = velocity;
+			};
+		},
+		noteoff: function () {
+			this.event = new NoteOff();
+			this.setNumber = function (pitch) {
+				this.event.pitch = pitch;
+			};
+			this.setValue = function (velocity) {
+				this.event.velocity = velocity;
+			};
+		},
+		polypressure: function () {
+			this.event = new PolyPressure();
+			this.setNumber = function (pitch) {
+				this.event.pitch = pitch;
+			};
+		},
+		continouscontrol: function () {
+			this.event = new ControlChange();
+		},
+		programchange: function () {
+			this.event = new ProgramChange();
+			this.setValue = this.setNumber;
+		},
+		channelpressure: function () {
+			this.event = new ChannelPressure();
+			this.setNumber = function (dummy) { };
+		},
+		pitchbend: function () {
+			this.event = new PitchBend();
+			this.setNumber = function (dummy) { };
+		}
+	}; // create = {
 
-  send() {
-    this.channels.forEach((channel) => {
-      if (Array.isArray(channel)) {
-        channel = channel[this.#iterator % channel.length];
-      }
-      this.setChannel(channel);
+	send() {
+		this.channels.forEach((channel) => {
+			if (Array.isArray(channel)) {
+				channel = channel[this.#iterator % channel.length];
+			}
+			this.setChannel(channel);
 
-      this.numbers.forEach((number) => {
-        if (Array.isArray(number)) {
-          number = number[this.#iterator % number.length];
-        }
-        this.setNumber(number);
+			this.numbers.forEach((number) => {
+				if (Array.isArray(number)) {
+					number = number[this.#iterator % number.length];
+				}
+				this.setNumber(number);
 
-        this.values.forEach((value) => {
-          if (Array.isArray(value)) {
-            value = value[this.#iterator % value.length];
-          }
-          this.setValue(value);
+				this.values.forEach((value) => {
+					if (Array.isArray(value)) {
+						value = value[this.#iterator % value.length];
+					}
+					this.setValue(value);
 
-          this.event.send();
-        });
-      });
-    });
-    this.iterator++;
-  } // send()
+					this.event.send();
+				});
+			});
+		});
+		this.iterator++;
+	} // send()
 }
 
 var m,
-  mappings = [];
+	mappings = [];
 
 function interpreteLine(line, lNr) {
-  return line
-    .toLowerCase()
-    .replace(/\s*\/\/.*/g, "") // remove comments
-    .replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
-    .replace(/(\S)any/g, "$1 any") // space any
-    .replace(/\b([a-z]+)(?=\s|$)/g, (_m, a) => {
-      let t = T(a);
-      if (t === undefined) {
-        throw new InputError(
-          "Sorry, I can't figure out what \"" + a + '" means.',
-          lNr
-        );
-      }
-      return " " + t + " ";
-    })
-    .replace(/\b([a-z#]+)(-?[0-9])\b/g, function (m, a, b) {
-      let pos = noteNames.indexOf(a);
-      if (pos !== -1) {
-        let nr = pos;
-        nr += 12 * (5 - MIDDLE_C_NUMBER + Number(b));
-        if (nr < 0 || nr > 127) {
-          throw new InputError(
-            'Note "' + m + '" (' + nr + ") is out of MIDI-Range [0 ... 127]",
-            lNr
-          );
-        } else {
-          return nr;
-        }
-      } else {
-        throw new InputError(
-          "Couldn't find \"" + a + '" of "' + m + '" in NOTE_NAMES',
-          lNr
-        );
-      }
-    })
-    .replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
-    .replace(/\s+/g, " ") // replace whitespaces
-    .replace(/\[\s*/g, "[") // remove spaces after [
-    .replace(/\s*\]/g, "]") // remove spaces before ]
-    .replace(/^ | $/g, ""); // remove first and last space
+	return line
+		.toLowerCase()
+		.replace(/\s*\/\/.*/g, "") // remove comments
+		.replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
+		.replace(/(\S)any/g, "$1 any") // space any
+		.replace(/\b([a-z]+)(?=\s|$)/g, (_m, a) => {
+			let t = T(a);
+			if (t === undefined) {
+				throw new InputError(
+					"Sorry, I can't figure out what \"" + a + '" means.',
+					lNr
+				);
+			}
+			return " " + t + " ";
+		})
+		.replace(/\b([a-z#]+)(-?[0-9])\b/g, function (m, a, b) {
+			let pos = noteNames.indexOf(a);
+			if (pos !== -1) {
+				let nr = pos;
+				nr += 12 * (5 - MIDDLE_C_NUMBER + Number(b));
+				if (nr < 0 || nr > 127) {
+					throw new InputError(
+						'Note "' + m + '" (' + nr + ") is out of MIDI-Range [0 ... 127]",
+						lNr
+					);
+				} else {
+					return nr;
+				}
+			} else {
+				throw new InputError(
+					"Couldn't find \"" + a + '" of "' + m + '" in NOTE_NAMES',
+					lNr
+				);
+			}
+		})
+		.replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
+		.replace(/\s+/g, " ") // replace whitespaces
+		.replace(/\[\s*/g, "[") // remove spaces after [
+		.replace(/\s*\]/g, "]") // remove spaces before ]
+		.replace(/^ | $/g, ""); // remove first and last space
 }
 
 function interpretCommand(cmd, lNr) {
-  let array = [];
+	let array = [];
 
-  cmd = cmd.replace(/\[([^\]]+)\]/g, function (_m, a) {
-    array.push(new Sequence(a, lNr));
-    return "";
-  });
+	cmd = cmd.replace(/\[([^\]]+)\]/g, function (_m, a) {
+		array.push(new Sequence(a, lNr));
+		return "";
+	});
 
-  cmd
-    .replace(/,,/, ",")
-    .split(/,/)
-    .forEach((p) => {
-      let range = p.match(/^(-?[0-9]+)-(-?[0-9])$/);
-      if (range) {
-        array.push(new Range(range[1], range[2], lNr));
-      } else if (p.match(/^input(?:type|channel|number|value)$/)) {
-        array.push(p);
-      } else if (!isNaN(p)) {
-        array.push(p);
-      } else {
-        throw new InputError(`Sorry, couldn't interpret "${p}"`, lNr);
-      }
-    });
+	cmd
+		.replace(/,,/, ",")
+		.split(/,/)
+		.forEach((p) => {
+			let range = p.match(/^(-?[0-9]+)-(-?[0-9])$/);
+			if (range) {
+				array.push(new Range(range[1], range[2], lNr));
+			} else if (p.match(/^input(?:type|channel|number|value)$/)) {
+				array.push(p);
+			} else if (!isNaN(p)) {
+				array.push(p);
+			} else {
+				throw new InputError(`Sorry, couldn't interpret "${p}"`, lNr);
+			}
+		});
 
-  return array;
+	return array;
 }
 
 class Mapping {
-  receive = [];
-  send = [];
+	receive = [];
+	send = [];
 }
 
 function createMappings() {
-  let mapping = new Mapping(),
-    message,
-    hierarchy;
-  let lNr = 2;
-  MIDI_MAPPING.split(/\n/).forEach((line) => {
-    interpreteLine(line, lNr)
-      .split(/ /)
-      .forEach((cmd) => {
-        if (cmd === "receive") {
-          message = new Message("any");
-          mapping = new Mapping();
-          mapping.receive = [message];
-          mapping.send = [];
-          mappings.push(mapping);
-          hierarchy = "???";
-        } else if (cmd === "send") {
-          if (mapping.receive.length) {
-            message = new Message("input");
-            mapping.send.push(message);
-            hierarchy = "???";
-          } else {
-            throw new InputError(
-              "No receiving message declared before sending",
-              lNr
-            );
-          }
-        } else if (cmd === "type") {
-          hierarchy = "type";
-        } else if (cmd === "channel") {
-          hierarchy = "channels";
-        } else if (cmd === "number") {
-          hierarchy = "numbers";
-        } else if (cmd === "value") {
-          hierarchy = "values";
-        } else if (hierarchy === "type") {
-          if (message.create[cmd]) {
-            message.create[cmd]();
-          } else {
-            throw new InputError('Cant find type "' + cmd + '"', lNr);
-          }
-          hierarchy = "channels";
-        } else if (hierarchy === "channels") {
-          message.channels = interpretCommand(cmd, lNr);
-          hierarchy = "numbers";
-        } else if (hierarchy === "numbers") {
-          message.numbers = interpretCommand(cmd, lNr);
-          hierarchy = "values";
-        } else if (hierarchy === "values") {
-          message.numbers = interpretCommand(cmd, lNr);
-          //hierarchy = "values";
-        }
-      });
-    ++lNr;
-  });
+	let mapping = new Mapping(),
+		message,
+		hierarchy;
+	let lNr = 2;
+	MIDI_MAPPING.split(/\n/).forEach((line) => {
+		interpreteLine(line, lNr)
+			.split(/ /)
+			.forEach((cmd) => {
+				if (cmd === "receive") {
+					message = new Message("any");
+					mapping = new Mapping();
+					mapping.receive = [message];
+					mapping.send = [];
+					mappings.push(mapping);
+					hierarchy = "???";
+				} else if (cmd === "send") {
+					if (mapping.receive.length) {
+						message = new Message("input");
+						mapping.send.push(message);
+						hierarchy = "???";
+					} else {
+						throw new InputError(
+							"No receiving message declared before sending",
+							lNr
+						);
+					}
+				} else if (cmd === "type") {
+					hierarchy = "type";
+				} else if (cmd === "channel") {
+					hierarchy = "channels";
+				} else if (cmd === "number") {
+					hierarchy = "numbers";
+				} else if (cmd === "value") {
+					hierarchy = "values";
+				} else if (hierarchy === "type") {
+					if (message.create[cmd]) {
+						message.create[cmd]();
+					} else {
+						throw new InputError('Cant find type "' + cmd + '"', lNr);
+					}
+					hierarchy = "channels";
+				} else if (hierarchy === "channels") {
+					message.channels = interpretCommand(cmd, lNr);
+					hierarchy = "numbers";
+				} else if (hierarchy === "numbers") {
+					message.numbers = interpretCommand(cmd, lNr);
+					hierarchy = "values";
+				} else if (hierarchy === "values") {
+					message.numbers = interpretCommand(cmd, lNr);
+					//hierarchy = "values";
+				}
+			});
+		++lNr;
+	});
 }
 
 class InputError extends Error {
-  constructor(msg, lNr = 0) {
-    if (lNr) {
-      super("[Line: " + lNr + "] " + msg);
-    } else {
-      super(msg);
-    }
-    this.name = "Input Error";
-  }
+	constructor(msg, lNr = 0) {
+		if (lNr) {
+			super("[Line: " + lNr + "] " + msg);
+		} else {
+			super(msg);
+		}
+		this.name = "Input Error";
+	}
 }
 
 class Range {
-  constructor(start, end, lNr = 0) {
-    if (isNaN(start)) {
-      throw new InputError(
-        'Range "' + start + "-" + end + '": "' + start + '" is not a number'
-      );
-    } else if (isNaN(end)) {
-      throw new InputError(
-        'Range "' + start + "-" + end + '": "' + end + '" is not a number'
-      );
-    } else if (Number(start) > Number(end)) {
-      throw new InputError(
-        'Range "' +
-          start +
-          "-" +
-          end +
-          '": "' +
-          start +
-          '" is greater than "' +
-          end +
-          '"'
-      );
-    }
-    this.start = Number(start);
-    this.end = Number(end);
-  }
+	constructor(start, end, lNr = 0) {
+		if (isNaN(start)) {
+			throw new InputError(
+				'Range "' + start + "-" + end + '": "' + start + '" is not a number'
+			);
+		} else if (isNaN(end)) {
+			throw new InputError(
+				'Range "' + start + "-" + end + '": "' + end + '" is not a number'
+			);
+		} else if (Number(start) > Number(end)) {
+			throw new InputError(
+				'Range "' +
+				start +
+				"-" +
+				end +
+				'": "' +
+				start +
+				'" is greater than "' +
+				end +
+				'"'
+			);
+		}
+		this.start = Number(start);
+		this.end = Number(end);
+	}
 
-  withinRange(n) {
-    return Number(n) >= this.start && Number(n) <= this.end;
-  }
-  forEach(func) {
-    for (let i = this.start; i <= this.end; ++i) {
-      func(i);
-    }
-  }
+	withinRange(n) {
+		return Number(n) >= this.start && Number(n) <= this.end;
+	}
+	forEach(func) {
+		for (let i = this.start; i <= this.end; ++i) {
+			func(i);
+		}
+	}
 }
 
 class Sequence {
-  constructor(string, lNr = 0) {
-    this.iterator = -1;
-    this.values = string.split(/,/);
-    this.values.forEach((v) => {
-      let m = v.match(/(-?[^-]+)-(-?[^-])/);
-      if (m) {
-        v = new Range(m[1], m[2]);
-      } else if (isNaN(v)) {
-        throw new InputError(
-          "Sequence [" + string + ']: "' + v + '" is not a number'
-        );
-      }
-    });
-  }
+	constructor(string, lNr = 0) {
+		this.iterator = -1;
+		this.values = string.split(/,/);
+		this.values.forEach((v) => {
+			let m = v.match(/(-?[^-]+)-(-?[^-])/);
+			if (m) {
+				v = new Range(m[1], m[2]);
+			} else if (isNaN(v)) {
+				throw new InputError(
+					"Sequence [" + string + ']: "' + v + '" is not a number'
+				);
+			}
+		});
+	}
 
-  get get() {
-    this.iterator = (this.iterator + 1) % this.values.length;
-    return this.values[this.iterator];
-  }
+	get get() {
+		this.iterator = (this.iterator + 1) % this.values.length;
+		return this.values[this.iterator];
+	}
 }
 
 // DEBUG >>
@@ -747,31 +747,31 @@ createMappings();
 const mappingKeys = Object.keys(mappings);
 
 function HandleMIDI(event) {
-  let key = RegExp(
-    event
-      .toString()
-      .replace(/\[[^\][]+\]/, "") // remove information in brackets
-      .replace(/:(\d+)/g, ":(?:\\d+|any)")
-  ); // add any to numbers
-  let mappings = mappingKeys.filter(function (mapping) {
-    return mapping.match(key);
-  });
-  if (mappings.length) {
-    if (PASS_THROUGH_INPUT) {
-      event.send();
-    }
-    mappings.forEach((messages) => {
-      messages.forEach((message) => {
-        message.send();
-      });
-    });
-  } else if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
-    event.send();
-  }
+	let key = RegExp(
+		event
+			.toString()
+			.replace(/\[[^\][]+\]/, "") // remove information in brackets
+			.replace(/:(\d+)/g, ":(?:\\d+|any)")
+	); // add any to numbers
+	let mappings = mappingKeys.filter(function (mapping) {
+		return mapping.match(key);
+	});
+	if (mappings.length) {
+		if (PASS_THROUGH_INPUT) {
+			event.send();
+		}
+		mappings.forEach((messages) => {
+			messages.forEach((message) => {
+				message.send();
+			});
+		});
+	} else if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
+		event.send();
+	}
 }
 
 function Trace(string) {
-  console.log(string);
+	console.log(string);
 }
 
 /*
