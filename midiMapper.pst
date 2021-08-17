@@ -638,6 +638,9 @@ function createMappings() {
 						message = new Message("input");
 						mapping.send.push(message);
 						hierarchy = "channels";
+						if (cmd !== "send") {
+							interpreteLine(cmd, lNr);
+						}
 					} else {
 						throw new InputError(
 							"No receiving message declared before sending",
