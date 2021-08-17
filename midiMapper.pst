@@ -438,6 +438,7 @@ class Message {
 	#iterator = 0;
 
 	constructor(initState) {
+		this.eventType = initState;
 		this.initState = initState;
 		this.channels = initState;
 		this.numbers = initState;
@@ -602,6 +603,7 @@ function interpretCommand(cmd, lNr) {
 				return "any";
 			} else if (p.match(/^input(?:|type|channel|number|value)$/)) {
 				array.push(p);
+				// TODO modified input + 1...
 			} else {
 				throw new InputError(`Sorry, couldn't interpret command "${p}"`, lNr);
 			}
@@ -631,7 +633,7 @@ function createMappings() {
 					mapping.send = [];
 					mappings.push(mapping);
 					hierarchy = "channels";
-				} else if (cmd === "send" || hierarchy === "send") {
+				} else if (cmd === "send" || hierarchy === "send") { // what if autosend call this function again?
 					if (mapping.receive.length) {
 						message = new Message("input");
 						mapping.send.push(message);
@@ -651,12 +653,11 @@ function createMappings() {
 				} else if (cmd === "value") {
 					hierarchy = "values";
 				} else if (hierarchy === "type") {
-					if (cmd === "input") {
-						message.eventType = "input"; // TODO work with it
-					} else if (cmd === "any") {
-						message.eventType = "any"; // TODO work with it
+					if (cmd === "input" || cmd === "any") {
+						// Do nothing since input and any by default
 					} else if (message.create[cmd]) {
 						message.create[cmd]();
+						message.eventType = cmd;
 					} else {
 						throw new InputError(`Cant find type "${cmd}"`, lNr);
 					}
