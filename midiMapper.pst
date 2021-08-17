@@ -592,12 +592,15 @@ function interpretCommand(cmd, lNr) {
 		.replace(/,,/, ",")
 		.split(/,/)
 		.forEach((p) => {
+			Trace(p);
 			let range = p.match(/^(-?[0-9]+)-(-?[0-9])$/);
 			if (range) {
 				array.push(new Range(range[1], range[2], lNr));
-			} else if (p.match(/^input(?:type|channel|number|value)$/)) {
-				array.push(p);
 			} else if (!isNaN(p)) {
+				array.push(p);
+			} else if (p === "any") {
+				return "any";
+			} else if (p.match(/^input(?:|type|channel|number|value)$/)) {
 				array.push(p);
 			} else {
 				throw new InputError(`Sorry, couldn't interpret "${p}"`, lNr);
@@ -627,12 +630,12 @@ function createMappings() {
 					mapping.receive = [message];
 					mapping.send = [];
 					mappings.push(mapping);
-					hierarchy = "???";
-				} else if (cmd === "send") {
+					hierarchy = "channels";
+				} else if (cmd === "send" || hierarchy === "send") {
 					if (mapping.receive.length) {
 						message = new Message("input");
 						mapping.send.push(message);
-						hierarchy = "???";
+						hierarchy = "channels";
 					} else {
 						throw new InputError(
 							"No receiving message declared before sending",
@@ -648,7 +651,9 @@ function createMappings() {
 				} else if (cmd === "value") {
 					hierarchy = "values";
 				} else if (hierarchy === "type") {
-					if (message.create[cmd]) {
+					if (cmd === "input") {
+						message.eventType = "input"; // TODO work with it
+					} else if (message.create[cmd]) {
 						message.create[cmd]();
 					} else {
 						throw new InputError('Cant find type "' + cmd + '"', lNr);
@@ -662,7 +667,7 @@ function createMappings() {
 					hierarchy = "values";
 				} else if (hierarchy === "values") {
 					message.numbers = interpretCommand(cmd, lNr);
-					//hierarchy = "values";
+					hierarchy = "send";
 				}
 			});
 		++lNr;
