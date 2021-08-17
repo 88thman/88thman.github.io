@@ -397,6 +397,7 @@ class ProgramChange {}
 class PitchBend {}
 class ChannelPressure {}
 
+/*
 class Collection {
   constructor(initState) {
     this.items = initState;
@@ -421,7 +422,6 @@ class Collection {
     }
   }
 }
-/*
 	[
 		type: [
 			channel: [
@@ -439,9 +439,9 @@ class Message {
 
   constructor(initState) {
     this.initState = initState;
-    this.channels = new Collection(initState);
-    this.numbers = new Collection(initState);
-    this.values = new Collection(initState);
+    this.channels = initState;
+    this.numbers = initState;
+    this.values = initState;
   }
 
   clone(depth) {
@@ -581,23 +581,29 @@ function interpreteLine(line, lNr) {
 
 function interpretCommand(cmd, lNr) {
   let array = [];
+
   cmd = cmd.replace(/\[([^\]]+)\]/g, function (_m, a) {
     array.push(new Sequence(a, lNr));
     return "";
   });
 
-  cmd = cmd.replace(/,,/, ",");
-  cmd = cmd.split(/,/);
+  cmd
+    .replace(/,,/, ",")
+    .split(/,/)
+    .forEach((p) => {
+      let range = p.match(/^(-?[0-9]+)-(-?[0-9])$/);
+      if (range) {
+        array.push(new Range(range[1], range[2], lNr));
+      } else if (p.match(/^input(?:type|channel|number|value)$/)) {
+        array.push(p);
+      } else if (!isNaN(p)) {
+        array.push(p);
+      } else {
+        throw new InputError(`Sorry, couldn't interpret "${p}"`, lNr);
+      }
+    });
 
-  cmd.forEach((p) => {
-    let range = p.match(/(-?[0-9]+)-(-?[0-9]+)/);
-    if (range) {
-      array.push(new Range(range[1], range[2], lNr));
-    }
-
-    if (p.match(/^input.*/)) {
-    }
-  });
+  return array;
 }
 
 class Mapping {
@@ -648,13 +654,13 @@ function createMappings() {
           }
           hierarchy = "channels";
         } else if (hierarchy === "channels") {
-          message.channels.add(interpretCommand(cmd, lNr));
+          message.channels = interpretCommand(cmd, lNr);
           hierarchy = "numbers";
         } else if (hierarchy === "numbers") {
-          message.numbers.add(interpretCommand(cmd, lNr));
+          message.numbers = interpretCommand(cmd, lNr);
           hierarchy = "values";
         } else if (hierarchy === "values") {
-          message.numbers.add(interpretCommand(cmd, lNr));
+          message.numbers = interpretCommand(cmd, lNr);
           //hierarchy = "values";
         }
       });
@@ -841,7 +847,7 @@ var map =
 	}
 }
 
-function 
+function
 
 
 
@@ -879,17 +885,17 @@ function HandleMIDI(event)
 								}
 							}
 						} else if (temp2[i].type == PROGRAM_CHANGE) {
-						
+
 						} else if (temp2[i].type == NOTE) {
-						
+
 						} else if (temp2[i].type == CUSTOM) {
-						
+
 						} else if (temp2[i].type == SEQUENCE) {
-						
+
 						}
 					}
 				} else if (temp2 = temp1["val" + event.value]) {
-				
+
 				}
 			}
 		}
