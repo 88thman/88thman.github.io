@@ -31,21 +31,21 @@ Short Example: (Go to MIDI_MAPPING = ``; to configure your mapping)
 
 MIDI-Messages: (for receiving and sending)
 
-	+------------------+---------+----------------------------+-----------------+
-	|       TYPE       | CHANNEL |           NUMBER           |      VALUE      |
-	+------------------+---------+----------------------------+-----------------+
-	|                  |         |           pitch            |     velocity    |
-	| noteOn           | 1...16, | 1 ... 127, any, <noteName> | 0 ... 127, any  |
-	| noteOff          |   any   | 1 ... 127, any, <noteName> | 0 ... 127, any  |
-	+------------------+---------+----------------------------+-----------------+
-	|                  | 1...16, |           pitch            |     pressure    |
-	| polyPressure     |   any   | 1 ... 127, any, <noteName> | 0 ... 127, any  |
-	+------------------+---------+----------------------------+-----------------+
-	| continousControl |         | 0 ... 127, any             | 0 ... 127, any  |
-	| programChange    | 1...16, | 0 ... 127, any             | --------------- |
-	| channelPressure  |   any   | 0 ... 127, any             | --------------- |
-	| pitchBend        |         | -8192 ... 8191, any        | --------------- |
-	+------------------+---------+----------------------------+-----------------+
+	+------------------+---------+---------------------+------------+
+	|       TYPE       | CHANNEL |        NUMBER       |   VALUE    |
+	+------------------+---------+---------------------+------------+
+	|                  |         |        pitch        |  velocity  |
+	| noteOn           |  1...16 | 1...127, <noteName> |  0 ... 127 |
+	| noteOff          |         | 1...127, <noteName> |  0 ... 127 |
+	+------------------+---------+---------------------+------------+
+	|                  |  1...16 |       pitch         |  pressure  |
+	| polyPressure     |         | 1...127, <noteName> |  0 ... 127 |
+	+------------------+---------+---------------------+------------+
+	| continousControl |         |        0...127      |  0 ... 127 |
+	| programChange    |  1...16 |        0...127      | XXXXXXXXXX |
+	| channelPressure  |         |        0...127      | XXXXXXXXXX |
+	| pitchBend        |         |    -8192...8191     | XXXXXXXXXX |
+	+------------------+---------+---------------------+------------+
 
 	channel 1 ... 16, any
 	
@@ -60,7 +60,7 @@ MIDI-Messages: (for receiving and sending)
 		Examples:
 			noteOn 60               = Only noteOn 60 (Middle C)
 			noteOff g4-a#6          = NotesOff between g4 and a#6 (including those)
-			c0, c1, c#7             = NotesOn: c0, c1 and c#7
+			c0, c1, c#7             = NotesOn: c0, c1 and c#7 // TODO ???????????
 			polyPressure 1-10       = PolyPressure of notes 1, 2, 3, ..., 10
 			polyPressure d#3        = PolyPressure of note d#3
 			controlChange any       = Any continous controller
@@ -95,17 +95,17 @@ Send-MIDI-Value:
 	Information:
 		"input" depends on it's position. (Below are alternatives)
 
-		recieve: channel any; type continousControl; number 113;   value any
-								|               |                  |            |
-								V               V                  V            V
-		send:   channel input;     type input;      number input; value input
-TODO Reihenfolge type -> channel -> ...
+		receive: type continousControl; channel any;   number 113;   value any
+								    |                  |             |            |
+		                      V                  V             V            V
+		send:          type input;     channel input; number input; value input
+
 Special Send-MIDI-Values:
 	
 	To send a different inputValue than the positional, use following, absolute commands:
 	
-	inputChannel
 	inputType
+	inputChannel
 	inputNumber
 	inputValue
 	
@@ -114,21 +114,21 @@ Special Send-MIDI-Values:
 
 Hierarchy of commands:
 
-	receive -> channel -> type -> number -> value
-	-> send -> channel -> type -> number -> value
+	receive -> type -> channel -> number -> value
+	-> send -> type -> channel -> number -> value
 
 Abbreviations:
 	
 	r = rec = receive
 	s = snd = send
-	ch      = channel
 	t = typ = type
+	ch      = channel
 	n = nr  = number
 	v = val = value
 	
 	i  = input
-	ic = inCh  = inputChannel
 	it = inTyp = inputType
+	ic = inCh  = inputChannel
 	in = inNum = inputNumber
 	iv = inVal = inputValue
 	
@@ -146,8 +146,8 @@ Comments:
 	// comment until the end of line
 	
 	Example:
-		r: ch any; typ cc; nr 7;    val any // Volume
-		s: ch  10; typ cc; nr 1,11; val i   // Modulation & Expression
+		r: typ cc; ch any; nr 7;    val any // Volume
+		s: typ cc; ch  10; nr 1,11; val i   // Modulation & Expression
 
 Pro-Tips:
 
@@ -156,7 +156,7 @@ Pro-Tips:
 		;.<>"'={}&|!%^:_@?
 		
 		Example:
-			receive: channel 1; type noteOn; number g#4
+			receive: type noteOn; channel 1; number g#4
 			send:    channel 4
 			
 	b) You can skip command names as long as you stay within the hierarchy.
