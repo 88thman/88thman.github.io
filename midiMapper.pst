@@ -1,6 +1,118 @@
 //////////////////// DEFINE YOUR MIDI MAPPING AND SETTINGS /////////////////////
 var MIDI_MAPPING = ` // Please leave this on line-number 2 to get accurate error-messages
+receive
+	channel 1 - 5       // receives channel 1, 2, 3, 4 and 5
+		type continousControl
+			number 1, 11  // receives cc1 and cc11
+				value any // receives any value from cc1 and cc11 from channels 1 - 5
+send
+	channel 2
+		type continousControl
+			number input            // in this case either cc1 or cc11
+				value input          // send received input value
+		type programChange
+			number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
 
+receive: channel any; type continousControl; number 113;   value any
+send:   channel input;     type input;      number input; value input
+
+r: ch any; typ cc; nr 7;    val any // Volume
+s: ch  10; typ cc; nr 1,11; val i   // Modulation & Expression
+
+	receive: channel 1; type noteOn; number g#4
+	send:    channel 4
+
+	r ch:16 t:cc nr:11 v:any
+	s ch:1  t:i  nr:13 v:i/2
+
+	r 16 cc 11 any
+	s 1  cc 13 i/2
+
+	r ch:16 t:cc nr:any v:any
+	s ch:3  t:i  nr:i   v:i+2
+	
+	r ch:16 t:cc
+	s ch:3 v:i+2
+
+	r 6 s 5                   // Receives channel 6, sends to channel 5
+	r 2 cc 1-3                // Block cc 1, 2 and 3 from channel 2
+	r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
+
+
+
+
+
+
+
+
+
+
+
+
+
+// [1] Sends all cc7 to channel 1:
+receive
+channel any
+	type controlChange
+		number 7
+			value any
+send
+channel 1
+	type controlChange
+		number 7
+			value input
+
+// [2 Abbreviations] Pass through cc 1 and 11 from channels 2 to 12:
+rec
+ch: 2-12
+	typ: cc
+		nr: 1, 11
+			val: any
+snd
+ch: i
+	typ: i
+		nr: i
+			val: i
+
+
+// [3 Skipping Commands] Route all MIDI-Messages from channel 16 to channel 5:
+r: ch 16
+s: ch  5
+
+// [4] NoteOns toggle on/off: cc95 with g3 and cc96 with note 70
+rec
+ch: 1
+	typ: noteOn
+		nr: g3
+			val: 127
+send
+ch: 1
+	typ: cc
+		nr: 95
+			val: [0,127]
+		
+rec
+ch: any
+	typ: noteOn
+		number: 70
+			val: 127
+send
+ch: 1
+	typ: cc
+		nr: 96
+			val: [0,127]
+	
+// [5] Block any message from channel 4 and cc1-11 from channel 5:
+r
+ch: 4
+r
+ch: 5
+	typ: cc 
+		nr: 1-11
+
+// [6] Use value of cc 30 for program change
+r ch: 15; typ: cc; nr: 30; val: any
+s ch: 1; typ: programChange; nr: inVal
 `;
 var PASS_THROUGH_INPUT = false; // true or false
 var SEND_UNMAPPED_MIDI = true; // true or false
@@ -10,74 +122,79 @@ var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
 // be careful to not use any of the abbreviations, it might not work
 /*////////////////////////////////// MANUAL ////////////////////////////////////
 This is hopefully the most advanced and fastest but easy to understand midiMapper for Mainstage.
-https://github.com/88thman/mainstageScripts
+https://github.com/88thman/mainstageScripts // TODO Aktuelle Adresse
 
 Short Example: (Go to MIDI_MAPPING = ``; to configure your mapping)
 
 	receive
-		type continousControl
-			channel 1 - 5              // receives channel 1, 2, 3, 4 and 5
+		channel 1 - 5                 // receives channel 1, 2, 3, 4 and 5
+			type continousControl
 				number 1, 11            // receives cc1 and cc11
 					value any            // receives any value from cc1 and cc11 from channels 1 - 5
 	send
-		type continousControl
-			channel 2
+		channel 2
+			type continousControl
 				number input            // in this case either cc1 or cc11
 					value input          // send received input value
-		type programChange
-			channel 1
+			type programChange
 				number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
 	
 
-MIDI-Messages: (for receiving and sending)
+Hierarchy of commands: (for receiving and sending)
 
-	+------------------+---------+---------------------+------------+
-	|       TYPE       | CHANNEL |        NUMBER       |   VALUE    |
-	+------------------+---------+---------------------+------------+
-	|                  |         |        pitch        |  velocity  |
-	| noteOn           |  1...16 | 1...127, <noteName> |  0 ... 127 |
-	| noteOff          |         | 1...127, <noteName> |  0 ... 127 |
-	+------------------+---------+---------------------+------------+
-	|                  |  1...16 |       pitch         |  pressure  |
-	| polyPressure     |         | 1...127, <noteName> |  0 ... 127 |
-	+------------------+---------+---------------------+------------+
-	| continousControl |         |        0...127      |  0 ... 127 |
-	| programChange    |  1...16 |        0...127      | XXXXXXXXXX |
-	| channelPressure  |         |        0...127      | XXXXXXXXXX |
-	| pitchBend        |         |    -8192...8191     | XXXXXXXXXX |
-	+------------------+---------+---------------------+------------+
+	channel -> type -> number -> value
 
-	channel 1 ... 16, any
+
+Command-specifications: (for receiving and sending)
+
+	+---------+------------------+---------------------+------------+
+	| CHANNEL |       TYPE       |        NUMBER       |   VALUE    |
+	+---------+------------------+---------------------+------------+
+	|         |                  |        pitch        |  velocity  |
+	|  1...16 | noteOn           | 1...127, <noteName> |  0 ... 127 |
+	|         | noteOff          | 1...127, <noteName> |  0 ... 127 |
+	+---------+------------------+---------------------+------------+
+	|         |                  |       pitch         |  pressure  |
+	|  1...16 | polyPressure     | 1...127, <noteName> |  0 ... 127 |
+	+---------+------------------+---------------------+------------+
+	|         | continousControl |        0...127      |  0 ... 127 |
+	|  1...16 | programChange    |        0...127      | XXXXXXXXXX |
+	|         | channelPressure  |        0...127      | XXXXXXXXXX |
+	|         | pitchBend        |    -8192...8191     | XXXXXXXXXX |
+	+---------+------------------+---------------------+------------+
+
+	channel examples:
+		any   = Receive any channel
+		15    = Channel 15
+		1,2   = Channel 1 and 2
+		3 - 6 = Channels 3, 4, 5 and 6
+		input = Send input channel (See "Send-MIDI-Value")
+
+	type and associated number examples:
+		noteOn 60               = Only noteOn 60 (Middle C)
+		noteOff g4-a#6          = NotesOff between g4 and a#6 (including those)
+		c0, c1, c#7             = NotesOn: c0, c1 and c#7 // TODO ???????????
+		polyPressure 1-10       = PolyPressure of notes 1, 2, 3, ..., 10
+		polyPressure d#3        = PolyPressure of note d#3
+		controlChange any       = Any continous controller
+		continousControl 1,4    = Continous controllers 1 and 4
+		continousControl1,11-13 = Continous controllers 1, 11, 12 and 13
+		programChange 100       = Program change 100
+		channelPressure any     = Any number of channelpressure
+		pitchBend -2000-2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
+		pitchBend -10--5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
 	
-		Examples:
-			channel any   = Any channel
-			channel 15    = Channel 15
-			channel 1,2   = Channel 1 and 2
-			channel 3 - 6 = Channels 3, 4, 5 and 6
-		
-
 	
-		Examples:
-			noteOn 60               = Only noteOn 60 (Middle C)
-			noteOff g4-a#6          = NotesOff between g4 and a#6 (including those)
-			c0, c1, c#7             = NotesOn: c0, c1 and c#7 // TODO ???????????
-			polyPressure 1-10       = PolyPressure of notes 1, 2, 3, ..., 10
-			polyPressure d#3        = PolyPressure of note d#3
-			controlChange any       = Any continous controller
-			continousControl 1,4    = Continous controllers 1 and 4
-			continousControl1,11-13 = Continous controllers 1, 11, 12 and 13
-			programChange 100       = Program change 100
-			channelPressure any     = Any number of channelpressure
-			pitchBend -2000-2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
-			pitchBend -10--5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
-
 Send-MIDI-Value:
 
-	<number>                = Send number
-	<number1>-<number2>     = Send all numbers between number1 and number2 (including those)
-	[<number>,<number>,...] = Send sequence
-	input                   = Send input
-	input<modification>     = Send modified input
+	To manipulate the values beeing sent, you can specify static numbers, ranges, sequences and input-depending numbers.
+
+	<nr>                = Send static number
+	<nr1>,<nr2>         = Send nr1 and nr2 simultanously
+	<nr1>-<nr2>         = Send all numbers between number1 and number2 (including those)
+	[<nr1>,<nr2>,...]   = Send sequence (First incomming message sends nr1, second incoming message sends nr2,...)
+	input               = Send input
+	input<modification> = Send modified input
 	
 	Examples:
 		7         = Send 7
@@ -110,12 +227,6 @@ Special Send-MIDI-Values:
 	inputValue
 	
 	(these can be modified too)
-	
-
-Hierarchy of commands:
-
-	receive -> type -> channel -> number -> value
-	-> send -> type -> channel -> number -> value
 
 Abbreviations:
 	
@@ -202,119 +313,6 @@ Pro-Tips:
 
 var MIDI_MAPPING_EXAMPLE = `
 
-	receive
-		channel 1 - 5                 // receives channel 1, 2, 3, 4 and 5
-			type continousControl
-				number 1, 11            // receives cc1 and cc11
-					value any            // receives any value from cc1 and cc11 from channels 1 - 5
-	send
-		channel 2
-			type continousControl
-				number input            // in this case either cc1 or cc11
-					value input          // send received input value
-			type programChange
-				number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
-
-		receive: channel any; type continousControl; number 113;   value any
-		send:   channel input;     type input;      number input; value input
-
-		r: ch any; typ cc; nr 7;    val any // Volume
-		s: ch  10; typ cc; nr 1,11; val i   // Modulation & Expression
-
-			receive: channel 1; type noteOn; number g#4
-			send:    channel 4
-
-			r ch:16 t:cc nr:11 v:any
-			s ch:1  t:i  nr:13 v:i/2
-	
-			r 16 cc 11 any
-			s 1  cc 13 i/2
-
-			r ch:16 t:cc nr:any v:any
-			s ch:3  t:i  nr:i   v:i+2
-			
-			r ch:16 t:cc
-			s ch:3 v:i+2
-
-			r 6 s 5                   // Receives channel 6, sends to channel 5
-			r 2 cc 1-3                // Block cc 1, 2 and 3 from channel 2
-			r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
-
-
-
-
-
-
-
-
-
-
-
-
-
-// [1] Sends all cc7 to channel 1:
-	receive
-		channel any
-			type controlChange
-				number 7
-					value any
-	send
-		channel 1
-			type controlChange
-				number 7
-					value input
-
-// [2 Abbreviations] Pass through cc 1 and 11 from channels 2 to 12:
-	rec
-		ch: 2-12
-			typ: cc
-				nr: 1, 11
-					val: any
-	snd
-		ch: i
-			typ: i
-				nr: i
-					val: i
-
-
-// [3 Skipping Commands] Route all MIDI-Messages from channel 16 to channel 5:
-	r: ch 16
-	s: ch  5
-
-// [4] NoteOns toggle on/off: cc95 with g3 and cc96 with note 70
-	rec
-		ch: 1
-			typ: noteOn
-				nr: g3
-					val: 127
-	send
-		ch: 1
-			typ: cc
-				nr: 95
-					val: [0,127]
-				
-	rec
-		ch: any
-			typ: noteOn
-				number: 70
-					val: 127
-	send
-		ch: 1
-			typ: cc
-				nr: 96
-					val: [0,127]
-			
-// [5] Block any message from channel 4 and cc1-11 from channel 5:
-	r
-		ch: 4
-	r
-		ch: 5
-			typ: cc 
-				nr: 1-11
-
-// [6] Use value of cc 30 for program change
-	r ch: 15; typ: cc; nr: 30; val: any
-	s ch: 1; typ: programChange; nr: inVal
 `;
 //////////////////////////////// END OF EXAMPLE ////////////////////////////////
 
@@ -743,11 +741,6 @@ class Sequence {
 		return this.values[this.iterator];
 	}
 }
-
-// DEBUG >>
-Trace("Starting to create mapping...");
-MIDI_MAPPING = MIDI_MAPPING_EXAMPLE;
-// << DEBUG
 
 createMappings();
 const mappingKeys = Object.keys(mappings);
