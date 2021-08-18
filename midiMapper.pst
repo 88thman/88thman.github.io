@@ -190,7 +190,7 @@ Send-MIDI-Value:
 	To manipulate the values beeing sent, you can specify static numbers, ranges, sequences and input-depending numbers.
 
 	<nr>                = Send static number
-	<nr1>,<nr2>         = Send nr1 and nr2 simultanously
+	<nr1>,<nr2>,...     = Send nr1 and nr2 simultanously
 	<nr1>-<nr2>         = Send all numbers between number1 and number2 (including those)
 	[<nr1>,<nr2>,...]   = Send sequence (First incomming message sends nr1, second incoming message sends nr2,...)
 	input               = Send input
@@ -212,16 +212,16 @@ Send-MIDI-Value:
 	Information:
 		"input" depends on it's position. (Below are alternatives)
 
-		receive: type continousControl; channel any;   number 113;   value any
-								    |                  |             |            |
-		                      V                  V             V            V
-		send:          type input;     channel input; number input; value input
+		receive: channel any; type continousControl; number 113; value any
+		|                 |                  |               |          |
+		|                 V                  V               V          V
+		send:   channel input;        type input; number input; value input
 
 Special Send-MIDI-Values:
 	
 	To send a different inputValue than the positional, use following, absolute commands:
 	
-	inputType
+	inputType (Do you really need this? ;)
 	inputChannel
 	inputNumber
 	inputValue
@@ -257,8 +257,8 @@ Comments:
 	// comment until the end of line
 	
 	Example:
-		r: typ cc; ch any; nr 7;    val any // Volume
-		s: typ cc; ch  10; nr 1,11; val i   // Modulation & Expression
+		r: ch any; typ cc; nr 7;    val any // Volume
+		s: ch  10; typ cc; nr 1,11; val i   // Modulation & Expression
 
 Pro-Tips:
 
@@ -269,6 +269,9 @@ Pro-Tips:
 		Example:
 			receive: type noteOn; channel 1; number g#4
 			send:    channel 4
+		
+		Important: Commands and values need separation either with space or symbol,
+		only notenames combine letters with numbers without spacing. (g5, g#4)
 			
 	b) You can skip command names as long as you stay within the hierarchy.
 		Skipped, recieiving commands will include any incoming channel, type, number and value.
@@ -283,22 +286,25 @@ Pro-Tips:
 		which means:
 			Route cc11 from channel 16 to cc13 in channel 1 with value divided by two
 
-	c) You can skip commands by setting the next channel-command
+	c) You can skip commands by naming the next command
+		(Even another order of commands is possible but I recommend consistency)
 
 		Not given input will be handled as any input
 		For not given output, input will be sent
 
 		Instead of:
-			ic:16 it:cc in:any iv:any
-			oc:3  ot:i  on:i   ov:i+2
+			r ch:16 t:cc n:any v:any
+			s ch:3  t:i  n:i   v:i+2
 		you can write:
-			rc:16 t:cc
-			sc:3 v:i+2
+			r ch:16 t:cc
+			s ch:3  v:i+2
 		which means:
 			Route controllers from channel 16 to channel 3
 			and add 2 to the value
 	
 	d) Block messages by not defining send command
+
+		receive ch 5 // without send command, channel 5 is beeing blocked
 
 	e) Combine abbreviations with Tips to write powerful yet short commands
 	
@@ -430,13 +436,13 @@ class Collection {
 */
 
 class Message {
-	static HIERARCHY = ["event", "channels", "numbers", "values"];
+	static HIERARCHY = ["channels", "event", "numbers", "values"];
 	iterator = 0;
 
 	constructor(initState) {
-		this.eventType = initState;
 		this.initState = initState;
 		this.channels = initState;
+		this.eventType = initState;
 		this.numbers = initState;
 		this.values = initState;
 	}
@@ -655,7 +661,7 @@ function createMappings() {
 			} else {
 				throw new InputError(`Cant find type "${cmd}"`, lNr);
 			}
-			hierarchy = "channels";
+			hierarchy = "numbers";
 		} else if (hierarchy === "channels") {
 			Trace(`channels: ${cmd}`);
 			message.channels = convertCommand(cmd, lNr);
