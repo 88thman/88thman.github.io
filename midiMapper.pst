@@ -750,8 +750,21 @@ class Sequence {
 	}
 }
 
+function displayMappings() {
+	mappings.forEach(m => {
+		Trace(`\nReceive:`);
+		m.receive.forEach(r => {
+			Trace(`   ${r}`);
+		});
+		Trace(`Send:`);
+		m.send.forEach(s => {
+			Trace(`   ${s}`);
+		});
+	});
+}
+
 createMappings();
-const mappingKeys = Object.keys(mappings);
+displayMappings();
 
 function HandleMIDI(event) {
 	let key = RegExp(
