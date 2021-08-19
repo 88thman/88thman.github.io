@@ -447,6 +447,14 @@ class Message {
 		this.values = initState;
 	}
 
+	display() {
+		if (Array.isArray(this.channels)) {
+			Trace('  ch: array');
+		} else {
+			Trace('  ch: ' + this.channels);
+		}
+	}
+
 	clone(depth) {
 		let m = new Message(this.initState);
 		let i = this.HIERARCHY.indexOf(depth) + 1;
@@ -617,6 +625,14 @@ function convertCommand(cmd, lNr) {
 class Mapping {
 	receive = [];
 	send = [];
+	display() {
+		Trace('---------------------------------------');
+		Trace('>>> Receive:');
+		this.receive.forEach(r => r.display());
+		Trace('Send: >>>');
+		this.receive.forEach(s => s.display());
+		Trace('---------------------------------------');
+	}
 }
 
 
@@ -749,22 +765,10 @@ class Sequence {
 		return this.values[this.iterator];
 	}
 }
-
-function displayMappings() {
-	mappings.forEach(m => {
-		Trace(`\nReceive:`);
-		m.receive.forEach(r => {
-			Trace(`   ${r}`);
-		});
-		Trace(`Send:`);
-		m.send.forEach(s => {
-			Trace(`   ${s}`);
-		});
-	});
-}
-
 createMappings();
-displayMappings();
+mappings.forEach(m => {
+	m.display();
+});
 
 function HandleMIDI(event) {
 	let key = RegExp(
