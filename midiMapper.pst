@@ -1,128 +1,20 @@
 //////////////////// DEFINE YOUR MIDI MAPPING AND SETTINGS /////////////////////
 var MIDI_MAPPING = ` // Please leave this on line-number 2 to get accurate error-messages
-receive
-	channel 1 - 5       // receives channel 1, 2, 3, 4 and 5
-		type continousControl
-			number 1, 11  // receives cc1 and cc11
-				value any // receives any value from cc1 and cc11 from channels 1 - 5
-send
-	channel 2
-		type continousControl
-			number input            // in this case either cc1 or cc11
-				value input          // send received input value
-		type programChange
-			number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
 
-receive: channel any; type continousControl; number 113;   value any
-send:   channel input;     type input;      number input; value input
-
-r: ch any; typ cc; nr 7;    val any // Volume
-s: ch  10; typ cc; nr 1,11; val i   // Modulation & Expression
-
-	receive: channel 1; type noteOn; number g#4
-	send:    channel 4
-
-	r ch:16 t:cc nr:11 v:any
-	s ch:1  t:i  nr:13 v:i/2
-
-	r 16 cc 11 any
-	s 1  cc 13 i/2
-
-	r ch:16 t:cc nr:any v:any
-	s ch:3  t:i  nr:i   v:i+2
-	
-	r ch:16 t:cc
-	s ch:3 v:i+2
-
-	r 6 s 5                   // Receives channel 6, sends to channel 5
-	r 2 cc 1-3                // Block cc 1, 2 and 3 from channel 2
-	r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
-
-
-
-
-
-
-
-
-
-
-
-
-
-// [1] Sends all cc7 to channel 1:
-receive
-channel any
-	type controlChange
-		number 7
-			value any
-send
-channel 1
-	type controlChange
-		number 7
-			value input
-
-// [2 Abbreviations] Pass through cc 1 and 11 from channels 2 to 12:
-rec
-ch: 2-12
-	typ: cc
-		nr: 1, 11
-			val: any
-snd
-ch: i
-	typ: i
-		nr: i
-			val: i
-
-
-// [3 Skipping Commands] Route all MIDI-Messages from channel 16 to channel 5:
-r: ch 16
-s: ch  5
-
-// [4] NoteOns toggle on/off: cc95 with g3 and cc96 with note 70
-rec
-ch: 1
-	typ: noteOn
-		nr: g3
-			val: 127
-send
-ch: 1
-	typ: cc
-		nr: 95
-			val: [0,127]
-		
-rec
-ch: any
-	typ: noteOn
-		number: 70
-			val: 127
-send
-ch: 1
-	typ: cc
-		nr: 96
-			val: [0,127]
-	
-// [5] Block any message from channel 4 and cc1-11 from channel 5:
-r
-ch: 4
-r
-ch: 5
-	typ: cc 
-		nr: 1-11
-
-// [6] Use value of cc 30 for program change
-r ch: 15; typ: cc; nr: 30; val: any
-s ch: 1; typ: programChange; nr: inVal
 `;
+
 var PASS_THROUGH_INPUT = false; // true or false
 var SEND_UNMAPPED_MIDI = true; // true or false
+
 var MIDDLE_C_NUMBER = 4; // corresponds to midi note 60
 var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
 // can be modified, german for example: 'c, cis, d, dis, e, f, fis, g, gis, a, b, h'
 // be careful to not use any of the abbreviations, it might not work
+
 /*////////////////////////////////// MANUAL ////////////////////////////////////
+
 This is hopefully the most advanced and fastest but easy to understand midiMapper for Mainstage.
-https://github.com/88thman/mainstageScripts // TODO Aktuelle Adresse
+https://github.com/88thman/mainstageScripts
 
 Short Example: (Go to MIDI_MAPPING = ``; to configure your mapping)
 
@@ -140,61 +32,55 @@ Short Example: (Go to MIDI_MAPPING = ``; to configure your mapping)
 				number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
 	
 
-Hierarchy of commands: (for receiving and sending)
+MIDI-Messages: (for receiving and sending)
 
-	channel -> type -> number -> value
-
-
-Command-specifications: (for receiving and sending)
-
-	+---------+------------------+---------------------+------------+
-	| CHANNEL |       TYPE       |        NUMBER       |   VALUE    |
-	+---------+------------------+---------------------+------------+
-	|         |                  |        pitch        |  velocity  |
-	|  1...16 | noteOn           | 1...127, <noteName> |  0 ... 127 |
-	|         | noteOff          | 1...127, <noteName> |  0 ... 127 |
-	+---------+------------------+---------------------+------------+
-	|         |                  |       pitch         |  pressure  |
-	|  1...16 | polyPressure     | 1...127, <noteName> |  0 ... 127 |
-	+---------+------------------+---------------------+------------+
-	|         | continousControl |        0...127      |  0 ... 127 |
-	|  1...16 | programChange    |        0...127      | XXXXXXXXXX |
-	|         | channelPressure  |        0...127      | XXXXXXXXXX |
-	|         | pitchBend        |    -8192...8191     | XXXXXXXXXX |
-	+---------+------------------+---------------------+------------+
-
-	channel examples:
-		any   = Receive any channel
-		15    = Channel 15
-		1,2   = Channel 1 and 2
-		3 - 6 = Channels 3, 4, 5 and 6
-		input = Send input channel (See "Send-MIDI-Value")
-
-	type and associated number examples:
-		noteOn 60               = Only noteOn 60 (Middle C)
-		noteOff g4-a#6          = NotesOff between g4 and a#6 (including those)
-		c0, c1, c#7             = NotesOn: c0, c1 and c#7 // TODO ???????????
-		polyPressure 1-10       = PolyPressure of notes 1, 2, 3, ..., 10
-		polyPressure d#3        = PolyPressure of note d#3
-		controlChange any       = Any continous controller
-		continousControl 1,4    = Continous controllers 1 and 4
-		continousControl1,11-13 = Continous controllers 1, 11, 12 and 13
-		programChange 100       = Program change 100
-		channelPressure any     = Any number of channelpressure
-		pitchBend -2000-2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
-		pitchBend -10--5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
+	channel 1 ... 16, any
 	
+		Examples:
+			channel any   = Any channel
+			channel 15    = Channel 15
+			channel1,2    = Channel 1 and 2
+			channel 3 - 6 = Channels 3, 4, 5 and 6
+		
 	
+	type, number, value:
+		+------------------+----------------------------+-----------------+
+		|       TYPE       |           NUMBER           |      VALUE      |
+		+------------------+----------------------------+-----------------+
+		|                  |           pitch            |     velocity    |
+		| noteOn           | 1 ... 127, any, <noteName> | 0 ... 127, any  |
+		| noteOff          | 1 ... 127, any, <noteName> | 0 ... 127, any  |
+		+------------------+----------------------------+-----------------+
+		|                  |           pitch            |     pressure    |
+		| polyPressure     | 1 ... 127, any, <noteName> | 0 ... 127, any  |
+		+------------------+----------------------------+-----------------+
+		| continousControl | 0 ... 127, any             | 0 ... 127, any  |
+		| programChange    | 0 ... 127, any             | --------------- |
+		| channelPressure  | 0 ... 127, any             | --------------- |
+		| pitchBend        | -8192 ... 8191, any        | --------------- |
+		+------------------+----------------------------+-----------------+
+	
+		Examples:
+			noteOn 60               = Only noteOn 60 (Middle C)
+			noteOff g4-a#6          = NotesOff between g4 and a#6 (including those)
+			c0, c1, c#7             = NotesOn: c0, c1 and c#7
+			polyPressure 1-10       = PolyPressure of notes 1, 2, 3, ..., 10
+			polyPressure d#3        = PolyPressure of note d#3
+			controlChange any       = Any continous controller
+			continousControl 1,4    = Continous controllers 1 and 4
+			continousControl1,11-13 = Continous controllers 1, 11, 12 and 13
+			programChange 100       = Program change 100
+			channelPressure any     = Any number of channelpressure
+			pitchBend -2000-2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
+			pitchBend -10--5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
+
 Send-MIDI-Value:
 
-	To manipulate the values beeing sent, you can specify static numbers, ranges, sequences and input-depending numbers.
-
-	<nr>                = Send static number
-	<nr1>,<nr2>,...     = Send nr1 and nr2 simultanously
-	<nr1>-<nr2>         = Send all numbers between number1 and number2 (including those)
-	[<nr1>,<nr2>,...]   = Send sequence (First incomming message sends nr1, second incoming message sends nr2,...)
-	input               = Send input
-	input<modification> = Send modified input
+	<number>                = Send number
+	<number1>-<number2>     = Send all numbers between number1 and number2 (including those)
+	[<number>,<number>,...] = Send sequence
+	input                   = Send input
+	input<modification>     = Send modified input
 	
 	Examples:
 		7         = Send 7
@@ -212,34 +98,40 @@ Send-MIDI-Value:
 	Information:
 		"input" depends on it's position. (Below are alternatives)
 
-		receive: channel any; type continousControl; number 113; value any
-		|                 |                  |               |          |
-		|                 V                  V               V          V
-		send:   channel input;        type input; number input; value input
-
+		recieve: channel any; type continousControl; number 113;   value any
+								|               |                  |            |
+								V               V                  V            V
+		send:   channel input;     type input;      number input; value input
+TODO Reihenfolge type -> channel -> ...
 Special Send-MIDI-Values:
 	
 	To send a different inputValue than the positional, use following, absolute commands:
 	
-	inputType (Do you really need this? ;)
 	inputChannel
+	inputType
 	inputNumber
 	inputValue
 	
 	(these can be modified too)
+	
+
+Hierarchy of commands:
+
+	receive -> channel -> type -> number -> value
+	-> send -> channel -> type -> number -> value
 
 Abbreviations:
 	
 	r = rec = receive
 	s = snd = send
-	t = typ = type
 	ch      = channel
+	t = typ = type
 	n = nr  = number
 	v = val = value
 	
 	i  = input
-	it = inTyp = inputType
 	ic = inCh  = inputChannel
+	it = inTyp = inputType
 	in = inNum = inputNumber
 	iv = inVal = inputValue
 	
@@ -267,11 +159,8 @@ Pro-Tips:
 		;.<>"'={}&|!%^:_@?
 		
 		Example:
-			receive: type noteOn; channel 1; number g#4
+			receive: channel 1; type noteOn; number g#4
 			send:    channel 4
-		
-		Important: Commands and values need separation either with space or symbol,
-		only notenames combine letters with numbers without spacing. (g5, g#4)
 			
 	b) You can skip command names as long as you stay within the hierarchy.
 		Skipped, recieiving commands will include any incoming channel, type, number and value.
@@ -286,25 +175,22 @@ Pro-Tips:
 		which means:
 			Route cc11 from channel 16 to cc13 in channel 1 with value divided by two
 
-	c) You can skip commands by naming the next command
-		(Even another order of commands is possible but I recommend consistency)
+	c) You can skip commands by setting the next channel-command
 
 		Not given input will be handled as any input
 		For not given output, input will be sent
 
 		Instead of:
-			r ch:16 t:cc n:any v:any
-			s ch:3  t:i  n:i   v:i+2
+			ic:16 it:cc in:any iv:any
+			oc:3  ot:i  on:i   ov:i+2
 		you can write:
-			r ch:16 t:cc
-			s ch:3  v:i+2
+			rc:16 t:cc
+			sc:3 v:i+2
 		which means:
 			Route controllers from channel 16 to channel 3
 			and add 2 to the value
 	
 	d) Block messages by not defining send command
-
-		receive ch 5 // without send command, channel 5 is beeing blocked
 
 	e) Combine abbreviations with Tips to write powerful yet short commands
 	
@@ -313,12 +199,124 @@ Pro-Tips:
 			r 2 cc 1-3                // Block cc 1, 2 and 3 from channel 2
 			r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
 */
+
 /////////////////////////// EXAMPLE (can be deleted) ///////////////////////////
-
 // TODO Put Example in comment section
-
 var MIDI_MAPPING_EXAMPLE = `
 
+	receive
+		channel 1 - 5                 // receives channel 1, 2, 3, 4 and 5
+			type continousControl
+				number 1, 11            // receives cc1 and cc11
+					value any            // receives any value from cc1 and cc11 from channels 1 - 5
+	send
+		channel 2
+			type continousControl
+				number input            // in this case either cc1 or cc11
+					value input          // send received input value
+			type programChange
+				number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
+
+		receive: channel any; type continousControl; number 113;   value any
+		send:   channel input;     type input;      number input; value input
+
+		r: ch any; typ cc; nr 7;    val any // Volume
+		s: ch  10; typ cc; nr 1,11; val i   // Modulation & Expression
+
+			receive: channel 1; type noteOn; number g#4
+			send:    channel 4
+
+			r ch:16 t:cc nr:11 v:any
+			s ch:1  t:i  nr:13 v:i/2
+	
+			r 16 cc 11 any
+			s 1  cc 13 i/2
+
+			r ch:16 t:cc nr:any v:any
+			s ch:3  t:i  nr:i   v:i+2
+			
+			r ch:16 t:cc
+			s ch:3 v:i+2
+
+			r 6 s 5                   // Receives channel 6, sends to channel 5
+			r 2 cc 1-3                // Block cc 1, 2 and 3 from channel 2
+			r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
+
+
+
+
+
+
+
+
+
+
+
+
+
+// [1] Sends all cc7 to channel 1:
+	receive
+		channel any
+			type controlChange
+				number 7
+					value any
+	send
+		channel 1
+			type controlChange
+				number 7
+					value input
+
+// [2 Abbreviations] Pass through cc 1 and 11 from channels 2 to 12:
+	rec
+		ch: 2-12
+			typ: cc
+				nr: 1, 11
+					val: any
+	snd
+		ch: i
+			typ: i
+				nr: i
+					val: i
+
+
+// [3 Skipping Commands] Route all MIDI-Messages from channel 16 to channel 5:
+	r: ch 16
+	s: ch  5
+
+// [4] NoteOns toggle on/off: cc95 with g3 and cc96 with note 70
+	rec
+		ch: 1
+			typ: noteOn
+				nr: g3
+					val: 127
+	send
+		ch: 1
+			typ: cc
+				nr: 95
+					val: [0,127]
+				
+	rec
+		ch: any
+			typ: noteOn
+				number: 70
+					val: 127
+	send
+		ch: 1
+			typ: cc
+				nr: 96
+					val: [0,127]
+			
+// [5] Block any message from channel 4 and cc1-11 from channel 5:
+	r
+		ch: 4
+	r
+		ch: 5
+			typ: cc 
+				nr: 1-11
+
+// [6] Use value of cc 30 for program change
+	r ch: 15; typ: cc; nr: 30; val: any
+	s ch: 1; typ: programChange; nr: inVal
 `;
 //////////////////////////////// END OF EXAMPLE ////////////////////////////////
 
@@ -436,23 +434,15 @@ class Collection {
 */
 
 class Message {
-	static HIERARCHY = ["channels", "event", "numbers", "values"];
-	iterator = 0;
+	static HIERARCHY = ["event", "channels", "numbers", "values"];
+	#iterator = 0;
 
 	constructor(initState) {
+		this.eventType = initState;
 		this.initState = initState;
 		this.channels = initState;
-		this.eventType = initState;
 		this.numbers = initState;
 		this.values = initState;
-	}
-
-	display() {
-		if (Array.isArray(this.channels)) {
-			Trace('  ch: array');
-		} else {
-			Trace('  ch: ' + this.channels);
-		}
 	}
 
 	clone(depth) {
@@ -520,19 +510,19 @@ class Message {
 	send() {
 		this.channels.forEach((channel) => {
 			if (Array.isArray(channel)) {
-				channel = channel[this.iterator % channel.length];
+				channel = channel[this.#iterator % channel.length];
 			}
 			this.setChannel(channel);
 
 			this.numbers.forEach((number) => {
 				if (Array.isArray(number)) {
-					number = number[this.iterator % number.length];
+					number = number[this.#iterator % number.length];
 				}
 				this.setNumber(number);
 
 				this.values.forEach((value) => {
 					if (Array.isArray(value)) {
-						value = value[this.iterator % value.length];
+						value = value[this.#iterator % value.length];
 					}
 					this.setValue(value);
 
@@ -544,8 +534,7 @@ class Message {
 	} // send()
 }
 
-var m,
-	mappings = [];
+var m, mappings = [];
 
 function interpreteLine(line, lNr) {
 	return line
@@ -553,7 +542,7 @@ function interpreteLine(line, lNr) {
 		.replace(/\s*\/\/.*/g, "") // remove comments
 		.replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
 		.replace(/(\S)any/g, "$1 any") // space any
-		.replace(/\b([a-z]+)(?=[\s\/*+-]|$)/g, (_m, a) => {
+		.replace(/\b([a-z]+)(?=\s|$)/g, (_m, a) => {
 			let t = T(a);
 			if (t === undefined) {
 				throw new InputError(
@@ -590,7 +579,7 @@ function interpreteLine(line, lNr) {
 		.replace(/^ | $/g, ""); // remove first and last space
 }
 
-function convertCommand(cmd, lNr) {
+function interpretCommand(cmd, lNr) {
 	
 	let array = [];
 
@@ -603,7 +592,7 @@ function convertCommand(cmd, lNr) {
 		.replace(/,,/, ",")
 		.split(/,/)
 		.forEach((p) => {
-			Trace(`      >> ${p}`);
+			Trace(p);
 			let range = p.match(/^(-?[0-9]+)-(-?[0-9]+)$/);
 			if (range) {
 				array.push(new Range(range[1], range[2], lNr));
@@ -611,11 +600,11 @@ function convertCommand(cmd, lNr) {
 				array.push(p);
 			} else if (p === "any") {
 				return "any";
-			} else if (p.match(/input(?:|type|channel|number|value)/)) {
+			} else if (p.match(/^input(?:|type|channel|number|value)$/)) {
 				array.push(p);
 				// TODO modified input + 1...
 			} else {
-				throw new InputError(`Sorry, couldn't convert command-value "${p}"`, lNr);
+				throw new InputError(`Sorry, couldn't interpret command "${p}"`, lNr);
 			}
 		});
 
@@ -625,81 +614,67 @@ function convertCommand(cmd, lNr) {
 class Mapping {
 	receive = [];
 	send = [];
-	display() {
-		Trace('---------------------------------------');
-		Trace('>>> Receive:');
-		this.receive.forEach(r => r.display());
-		Trace('Send: >>>');
-		this.receive.forEach(s => s.display());
-		Trace('---------------------------------------');
-	}
 }
 
-
 function createMappings() {
-	function interpreteCommand(cmd) {
-		if (!cmd.match(/\S/)) {
-			// catch empty lines
-		} else if (cmd === "receive") {
-			message = new Message("any");
-			mapping = new Mapping();
-			mapping.receive = [message];
-			mapping.send = [];
-			mappings.push(mapping);
-			hierarchy = "channels";
-		} else if (cmd === "send" || hierarchy === "send") {
-			if (mapping.receive.length) {
-				message = new Message("input");
-				mapping.send.push(message);
-				hierarchy = "channels";
-				if (cmd !== "send") {
-					interpreteCommand(cmd);
-				}
-			} else {
-				throw new InputError(
-					"No receiving message declared before sending",
-					lNr
-				);
-			}
-		} else if (cmd === "channel") {
-			hierarchy = "channels";
-		} else if (cmd === "type") {
-			hierarchy = "type";
-		} else if (cmd === "number") {
-			hierarchy = "numbers";
-		} else if (cmd === "value") {
-			hierarchy = "values";
-		} else if (hierarchy === "channels") {
-			Trace(`   channels: ${cmd}`);
-			message.channels = convertCommand(cmd, lNr);
-			hierarchy = "type";
-		} else if (hierarchy === "type") {
-			Trace(` -> hierarchy: ${hierarchy}; cmd: ${cmd}`)
-			if (cmd === "input" || cmd === "any") {
-				// Do nothing since input and any by default
-			} else if (message.create[cmd]) {
-				message.create[cmd]();
-				message.eventType = cmd;
-			} else {
-				throw new InputError(`Cant find type "${cmd}"`, lNr);
-			}
-			hierarchy = "numbers";
-		} else if (hierarchy === "numbers") {
-			Trace(`   numbers: ${cmd}`);
-			message.numbers = convertCommand(cmd, lNr);
-			hierarchy = "values";
-		} else if (hierarchy === "values") {
-			Trace(`   values: ${cmd}`);
-			message.numbers = convertCommand(cmd, lNr);
-			hierarchy = "send";
-		}
-	}
-
-	let message, hierarchy, lNr = 2, mapping = new Mapping();
+	let mapping = new Mapping(),
+		message,
+		hierarchy;
+	let lNr = 2;
 	MIDI_MAPPING.split(/\n/).forEach((line) => {
 		interpreteLine(line, lNr)
 			.split(/ /)
-			.forEach(interpreteCommand);
+			.forEach((cmd) => {
+				if (cmd === "receive") {
+					message = new Message("any");
+					mapping = new Mapping();
+					mapping.receive = [message];
+					mapping.send = [];
+					mappings.push(mapping);
+					hierarchy = "channels";
+				} else if (cmd === "send" || hierarchy === "send") { // what if autosend call this function again?
+					if (mapping.receive.length) {
+						message = new Message("input");
+						mapping.send.push(message);
+						hierarchy = "channels";
+						if (cmd !== "send") {
+							interpreteLine(cmd, lNr);
+						}
+					} else {
+						throw new InputError(
+							"No receiving message declared before sending",
+							lNr
+						);
+					}
+				} else if (cmd === "type") {
+					hierarchy = "type";
+				} else if (cmd === "channel") {
+					hierarchy = "channels";
+				} else if (cmd === "number") {
+					hierarchy = "numbers";
+				} else if (cmd === "value") {
+					hierarchy = "values";
+				} else if (hierarchy === "type") {
+					if (cmd === "input" || cmd === "any") {
+						// Do nothing since input and any by default
+					} else if (message.create[cmd]) {
+						message.create[cmd]();
+						message.eventType = cmd;
+					} else {
+						throw new InputError(`Cant find type "${cmd}"`, lNr);
+					}
+					hierarchy = "channels";
+				} else if (hierarchy === "channels") {
+					message.channels = interpretCommand(cmd, lNr);
+					hierarchy = "numbers";
+				} else if (hierarchy === "numbers") {
+					message.numbers = interpretCommand(cmd, lNr);
+					hierarchy = "values";
+				} else if (hierarchy === "values") {
+					message.numbers = interpretCommand(cmd, lNr);
+					hierarchy = "send";
+				}
+			});
 		++lNr;
 	});
 }
@@ -716,6 +691,8 @@ class InputError extends Error {
 }
 
 class Range {
+	static regex = /(-?[0-9]+)-(-?[0-9]+)/g;
+
 	constructor(start, end, lNr = 0) {
 		if (isNaN(start)) {
 			throw new InputError(
@@ -734,6 +711,10 @@ class Range {
 		this.end = Number(end);
 	}
 
+	toString() {
+		return this.start + '-' + this.end;
+	}
+
 	withinRange(n) {
 		return Number(n) >= this.start && Number(n) <= this.end;
 	}
@@ -742,17 +723,25 @@ class Range {
 			func(i);
 		}
 	}
+
+	static replace(string) {
+		return string.replace(Range.regex, (m, a, b) => {
+			let array = [];
+			for(let i = Number(a); i <= Number(b); i++) {
+				array.push(i);
+			}
+			return array.join(',');
+		});
+	}
 }
 
 class Sequence {
 	constructor(string, lNr = 0) {
 		this.iterator = -1;
+		string = Range.replace(string);
 		this.values = string.split(/,/);
 		this.values.forEach((v) => {
-			let m = v.match(/(-?[^-]+)-(-?[^-])/);
-			if (m) {
-				v = new Range(m[1], m[2]);
-			} else if (isNaN(v)) {
+			if (isNaN(v)) {
 				throw new InputError(
 					`Sequence [${string}]: "${v}" is not a number`
 				);
@@ -760,15 +749,23 @@ class Sequence {
 		});
 	}
 
-	get get() {
+	toString() {
+		return `[${this.values.join(', ')}]`;
+	}
+
+	get() {
 		this.iterator = (this.iterator + 1) % this.values.length;
 		return this.values[this.iterator];
 	}
 }
+
+// DEBUG >>
+Trace("Starting to create mapping...");
+MIDI_MAPPING = MIDI_MAPPING_EXAMPLE;
+// << DEBUG
+
 createMappings();
-mappings.forEach(m => {
-	m.display();
-});
+const mappingKeys = Object.keys(mappings);
 
 function HandleMIDI(event) {
 	let key = RegExp(
