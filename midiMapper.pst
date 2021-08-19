@@ -595,7 +595,7 @@ function convertCommand(cmd, lNr) {
 		.replace(/,,/, ",")
 		.split(/,/)
 		.forEach((p) => {
-			Trace(p);
+			Trace(`      >> ${p}`);
 			let range = p.match(/^(-?[0-9]+)-(-?[0-9])$/);
 			if (range) {
 				array.push(new Range(range[1], range[2], lNr));
@@ -629,7 +629,7 @@ function createMappings() {
 			mapping.send = [];
 			mappings.push(mapping);
 			hierarchy = "channels";
-		} else if (cmd === "send" || hierarchy === "send") { // what if autosend call this function again?
+		} else if (cmd === "send" || hierarchy === "send") {
 			if (mapping.receive.length) {
 				message = new Message("input");
 				mapping.send.push(message);
@@ -643,16 +643,20 @@ function createMappings() {
 					lNr
 				);
 			}
-		} else if (cmd === "type") {
-			hierarchy = "type";
 		} else if (cmd === "channel") {
 			hierarchy = "channels";
+		} else if (cmd === "type") {
+			hierarchy = "type";
 		} else if (cmd === "number") {
 			hierarchy = "numbers";
 		} else if (cmd === "value") {
 			hierarchy = "values";
+		} else if (hierarchy === "channels") {
+			Trace(`   channels: ${cmd}`);
+			message.channels = convertCommand(cmd, lNr);
+			hierarchy = "type";
 		} else if (hierarchy === "type") {
-			Trace(`hierarchy: ${hierarchy} - cmd: ${cmd}`)
+			Trace(` -> hierarchy: ${hierarchy}; cmd: ${cmd}`)
 			if (cmd === "input" || cmd === "any") {
 				// Do nothing since input and any by default
 			} else if (message.create[cmd]) {
@@ -662,16 +666,12 @@ function createMappings() {
 				throw new InputError(`Cant find type "${cmd}"`, lNr);
 			}
 			hierarchy = "numbers";
-		} else if (hierarchy === "channels") {
-			Trace(`channels: ${cmd}`);
-			message.channels = convertCommand(cmd, lNr);
-			hierarchy = "numbers";
 		} else if (hierarchy === "numbers") {
-			Trace(`numbers: ${cmd}`);
+			Trace(`   numbers: ${cmd}`);
 			message.numbers = convertCommand(cmd, lNr);
 			hierarchy = "values";
 		} else if (hierarchy === "values") {
-			Trace(`values: ${cmd}`);
+			Trace(`   values: ${cmd}`);
 			message.numbers = convertCommand(cmd, lNr);
 			hierarchy = "send";
 		}
