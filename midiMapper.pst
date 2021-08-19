@@ -536,6 +536,17 @@ class Message {
 
 var m, mappings = [];
 
+class Note {
+	static getNumber(n) {
+		let pos = noteNames.indexOf(n);
+		if (pos === -1) {
+			return undefined;
+		} else {
+			
+		}
+	}
+}
+
 function interpreteLine(line, lNr) {
 	return line
 		.toLowerCase()
