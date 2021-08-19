@@ -745,7 +745,7 @@ class Sequence {
 	}
 }
 createMappings();
-Trace('Please make sure the mapping is interpreted correctly:')
+Trace('Interpreted Mapping:')
 Trace('---------------------------------------');
 mappings.forEach(m => {
 	m.display();
