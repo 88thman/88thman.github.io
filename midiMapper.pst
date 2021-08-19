@@ -537,12 +537,42 @@ class Message {
 var m, mappings = [];
 
 class Note {
-	static getNumber(n) {
-		let pos = noteNames.indexOf(n);
-		if (pos === -1) {
-			return undefined;
+	static is(n, lNr = 0) {
+		let m = n.match(/\b([a-z#]+)(-?[0-9])\b/g);
+		if (m) {
+			if (noteNames.indexOf(m[1])) {
+				return {
+					name: m[1],
+					number: Number(m[2])
+				};
+			} else {
+				throw new InputError(
+					`Couldn't find "${m[1]}" of "${n}" in NOTE_NAMES`,
+					lNr
+				);
+			}
 		} else {
-			
+			return undefined;
+		}
+	}
+
+	static replace(n, lNr = 0) {
+		let note = Note.is(n);
+		if (note) {
+			let pos = noteNames.indexOf(note.name);
+			if (pos === -1) {
+				return undefined;
+			} else {
+				let nr = pos + 12 * (5 - MIDDLE_C_NUMBER + note.number);
+				if (nr < 0 || nr > 127) {
+					throw new InputError(
+						`Note "${n}" (${nr}) is out of MIDI-Range [0 ... 127]`,
+						lNr
+					);
+				} else {
+
+				}
+			}
 		}
 	}
 }
