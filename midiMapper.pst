@@ -1,6 +1,20 @@
 //////////////////// DEFINE YOUR MIDI MAPPING AND SETTINGS /////////////////////
 var MIDI_MAPPING = ` // Please leave this on line-number 2 to get accurate error-messages
 
+
+	r 1 cc 30  1 s nr 51 [0, 127]
+	r 1 cc 30  3 s nr 52 [0, 127]
+	r 1 cc 30  5 s nr 53 [0, 127]
+	r 1 cc 30  7 s nr 54 [0, 127]
+	r 1 cc 30  9 s nr 55 [0, 127]
+	r 1 cc 30 11 s nr 56 [0, 127]
+	r 1 cc 30 13 s nr 57 [0, 127]
+	r 1 cc 30 15 s nr 58 [0, 127]
+	// r 1 cc 17 5 s nr 59 [0, 127] master mute ?
+
+	// TODO AudioModeling Half and Half
+	r 16 cc 11 s cc 12 127-i*4
+	r 16 cc 11 s cc 13 i*4-381
 `;
 
 var PASS_THROUGH_INPUT = false; // true or false
