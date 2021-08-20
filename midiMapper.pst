@@ -422,8 +422,36 @@ var MIDI_MAPPING_EXAMPLE = `
 `;
 //////////////////////////////// END OF EXAMPLE ////////////////////////////////
 
+
+// TODO Error Help Forum link
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /////////////////// CODE - DO NOT EDIT (unless you know how) ///////////////////
-var noteNames = NOTE_NAMES.replace(/\s/g, "").split(/,/);
+if (Array.prototype.iterate === undefined) {
+	Array.prototype.iterate = function (func) {
+		let i = -1, l = this.length;
+		while (++i < l) {
+			this[i] = func(this[i]);
+		}
+	};
+} else {
+	throw new Error('Array.prototype.iterate already defined!');
+}
+
 var dict = {
 	r: "receive",
 	rec: "receive",
@@ -641,9 +669,14 @@ var m, mappings = [];
 
 class Note {
 	static regex = /\b([a-z#]+)(-?[0-9])\b/g;
+	static names = [];
+
+	static setNames(string) {
+		Note.names = string.replace(/\s/g, "").split(/,/);
+	} 
 
 	static number(n, lNr = 0) {
-		let m = n.match(this.regex);
+		let m = n.match(Note.regex);
 		if (m) {
 			let pos = noteNames.indexOf(m[1]);
 			if (pos !== -1) {
@@ -676,9 +709,11 @@ class Note {
 }
 
 class Command {
-	static regex = /\b([a-z]+)(?=\s|$)/g;
+	static regex = /[a-z]+/g;
 
-	static // HERE I AM #########################################################################
+	static replace = function (cmd) {
+
+	}
 }
 
 function translateLine(line, lNr) {
@@ -686,7 +721,7 @@ function translateLine(line, lNr) {
 		.toLowerCase()
 		.replace(/\s*\/\/.*/g, "") // remove comments
 		.replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
-		.replace(/(\S)any/g, "$1 any") // space any
+		//.replace(/(\S)any/g, "$1 any") // space any
 		.replace(Command.regex, (_m, a) => {
 			let t = T(a);
 			if (t === undefined) {
@@ -742,12 +777,31 @@ function interpretCommand(cmd, lNr) {
 class Mapping {
 	receive = [];
 	send = [];
-	display() {
-		Trace('>>> Receive:');
-		this.receive.forEach(r => r.display());
-		Trace('Send: >>>');
-		this.send.forEach(s => s.display());
-		Trace('---------------------------------------');
+
+	constructor(string) {
+		let commands = [];
+		let lNr = 1;
+		string = string.replace(/\s*\/\/.*/g, ""); // remove comments
+		let lines = string.split(/\n/);
+		lines.iterate(line => {
+			++lNr;
+			let elements = line.split(/ /);
+			elements.forEach(el => {
+				Note.names.forEach(noteName => {
+					
+				});
+			});
+		});
+	}
+
+	toString() {
+		let array = [];
+		array.push('>>> Receive:');
+		this.receive.forEach(r => array.push(r.toString()));
+		array.push('Send: >>>');
+		this.send.forEach(s => array.push(s.toString()));
+		array.push('---------------------------------------');
+		return array.join('\n');
 	}
 }
 
@@ -848,13 +902,13 @@ function createMappings() {
 					}
 					hierarchy = "channels";
 				} else if (hierarchy === "channels") {
-					message.channels = interpretCommand(cmd, lNr);
+					message.channels = interpreteCommand(cmd, lNr);
 					hierarchy = "numbers";
 				} else if (hierarchy === "numbers") {
-					message.numbers = interpretCommand(cmd, lNr);
+					message.numbers = interpreteCommand(cmd, lNr);
 					hierarchy = "values";
 				} else if (hierarchy === "values") {
-					message.numbers = interpretCommand(cmd, lNr);
+					message.numbers = interpreteCommand(cmd, lNr);
 					hierarchy = "send";
 				}
 			});
@@ -947,12 +1001,9 @@ Trace("Starting to create mapping...");
 MIDI_MAPPING = MIDI_MAPPING_EXAMPLE;
 // << DEBUG
 
-createMappings();
-Trace('Interpreted Mapping:')
-Trace('---------------------------------------');
-mappings.forEach(m => {
-	m.display();
-});
+Note.setNames(NOTE_NAMES);
+let mapping = new Mapping(MIDI_MAPPING);
+Trace(mapping.toString());
 
 function HandleMIDI(event) {
 	let key = RegExp(
