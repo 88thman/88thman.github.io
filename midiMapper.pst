@@ -613,19 +613,19 @@ class Message {
 	send() {
 		this.channels.forEach((channel) => {
 			if (Array.isArray(channel)) {
-				channel = channel[this.#iterator % channel.length];
+				channel = channel[this.iterator % channel.length];
 			}
 			this.setChannel(channel);
 
 			this.numbers.forEach((number) => {
 				if (Array.isArray(number)) {
-					number = number[this.#iterator % number.length];
+					number = number[this.iterator % number.length];
 				}
 				this.setNumber(number);
 
 				this.values.forEach((value) => {
 					if (Array.isArray(value)) {
-						value = value[this.#iterator % value.length];
+						value = value[this.iterator % value.length];
 					}
 					this.setValue(value);
 
@@ -681,7 +681,7 @@ class Command {
 	static // HERE I AM #########################################################################
 }
 
-function interpreteLine(line, lNr) {
+function translateLine(line, lNr) {
 	return line
 		.toLowerCase()
 		.replace(/\s*\/\/.*/g, "") // remove comments
@@ -805,7 +805,7 @@ function createMappings() {
 
 	let message, hierarchy, lNr = 2, mapping = new Mapping();
 	MIDI_MAPPING.split(/\n/).forEach((line) => {
-		interpreteLine(line, lNr)
+		translateLine(line, lNr)
 			.split(/ /)
 			.forEach((cmd) => {
 				if (cmd === "receive") {
@@ -821,7 +821,7 @@ function createMappings() {
 						mapping.send.push(message);
 						hierarchy = "channels";
 						if (cmd !== "send") {
-							interpreteLine(cmd, lNr);
+							translateLine(cmd, lNr);
 						}
 					} else {
 						throw new InputError(
