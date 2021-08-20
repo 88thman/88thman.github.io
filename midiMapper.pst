@@ -791,6 +791,20 @@ createMappings();
 const mappingKeys = Object.keys(mappings);
 
 function HandleMIDI(event) {
+	let mapped = mapping.handleMIDI(event);
+	if (mapped) {
+		if (PASS_THROUGH_INPUT) {
+			event.send();
+		}
+	} else { // not mapped
+		if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
+			event.send();
+		}
+	}
+}
+
+/*
+function HandleMIDI(event) {
 	let key = RegExp(
 		event
 			.toString()
@@ -817,8 +831,6 @@ function HandleMIDI(event) {
 function Trace(string) {
 	console.log(string);
 }
-
-/*
 
 [ControlChange channel:1 number:100 [Reg.Par. LSB] value:100]
 [NoteOn channel:1 pitch:100 [E6] velocity:100]
