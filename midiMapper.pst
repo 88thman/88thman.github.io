@@ -35,7 +35,7 @@ var MIDI_MAPPING = ` // Please leave this on line-number 2 to get accurate error
 var PASS_THROUGH_INPUT = false; // true or false
 var SEND_UNMAPPED_MIDI = true; // true or false
 
-var MIDDLE_C_NUMBER = 4; // corresponds to midi note 60
+var MIDDLE_C_NUMBER = 4; // corresponds to midi note 60 ≈ 256 Hz
 var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
 // Can be modified, german for example: "c, cis, d, dis, e, f, fis, g, gis, a, b, h"
 // Allowed are only letters "a" to "z" and "#"
