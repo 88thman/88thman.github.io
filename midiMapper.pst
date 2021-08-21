@@ -43,7 +43,7 @@ var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
 /*////////////////////////////////// MANUAL ////////////////////////////////////
 
 This is hopefully the most advanced and fastest but easy to understand midiMapper for Mainstage.
-https://github.com/88thman/mainstageScripts
+https://github.com/88thman/mainstageScripts // TODO
 	
 
 MIDI-Messages: (for receiving and sending)
@@ -90,7 +90,7 @@ MIDI-Messages: (for receiving and sending)
 		
 		Important:
 			<noteName> consists of the previously defined NOTE_NAMES and a octave-number
-			Examples: Fis3, IV#2, h-1,...
+			Examples: Fis3, IV#2, a#-1, Do5, ...
 
 Send-MIDI-Value:
 
@@ -655,6 +655,15 @@ function interpretCommand(cmd, lNr) {
 class Mapping {
 	receive = [];
 	send = [];
+
+	handleMIDI(event) {
+		this.receive.forEach(r => {
+			if (r.match(event)) {
+				this.send.forEach(s => s.send(event));
+				break;
+			}
+		});
+	}
 }
 
 function createMappings() {
