@@ -1,5 +1,4 @@
-//////////////////// DEFINE YOUR MIDI MAPPING AND SETTINGS /////////////////////
-var MIDI_MAPPING = ` // Please leave this on line-number 2 to get accurate error-messages
+const MIDI_MAPPING = ` // Please leave this on line-number 1 to get accurate error-messages
 
 receive
 	channel 1 - 5       // receives channel 1, 2, 3, 4 and 5
@@ -278,7 +277,7 @@ Pro-Tips:
 
 	a) You can use spaces, line breaks and following symbols to beautify your mappings:
 		
-		;.<>"'={}&|!%^:_@?
+		;<>"'={}&|!%^:_@?
 		
 		Example:
 			receive: channel 1; type noteOn; number g#4
@@ -348,7 +347,7 @@ var MIDI_MAPPING_EXAMPLE = `
 
 
 /////////////////// CODE - DO NOT EDIT (unless you know how) ///////////////////
-let info = '\nGet help at: http://github.com/88thman';
+let info = '\nGet help at: http://github.com/88thman'; // TODO aktuell
 
 if (Array.prototype.iterate === undefined) {
 	Array.prototype.iterate = function (func) {
@@ -432,6 +431,7 @@ var dict = {
 };
 
 function T(t) {
+	t = t.toLowerCase();
 	if (t in dict) {
 		return dict[t];
 	} else {
@@ -467,7 +467,7 @@ class Collection {
 		}
 	}
 
-  display() {
+  toString() {
 	  if (this.array) {
 		  return this.items.join(', ');
 	  } else {
@@ -490,11 +490,11 @@ class Message {
 		this.values = new Collection(initState);
 	}
 
-	display() {
-		Trace('   ch: ' + this.channels.display());
-		Trace('      type: ' + this.types.display());
-		Trace('         nr: ' + this.numbers.display());
-		Trace('            val: ' + this.values.display());
+	toString() {
+		return `	ch: ${this.channels.toString()}
+		type: ${this.types.toString()}
+			nr: ${this.numbers.toString()}
+				val: ${this.values.toString()}`;
 	}
 
 	clone(depth) {
@@ -585,27 +585,24 @@ class Message {
 	} // send()
 }
 
-var m, mappings = [];
-
 class Note {
-	static regex = /\b([a-z#]+)(-?[0-9]+)\b/ig;
+	static regex = /^([a-z#]+)(-?[0-9]+)$/;
 	static names = [];
 
 	static setNames(string) {
 		Note.names = string.replace(/\s/g, "").split(/,/);
 	} 
 
-	static number(n, lNr = 0) {
+	constructor(n) {
 		let m = n.match(Note.regex);
 		if (m) {
 			let pos = noteNames.indexOf(m[1]);
 			if (pos !== -1) {
 				let nr = pos + 12 * (5 - MIDDLE_C_NUMBER + Number(m[2]));
 				if (nr < 0 || nr > 127) {
-					throw new InputError(
-						`Note "${n}" (${nr}) is out of MIDI-Range [0 ... 127]`,
-						lNr
-					);
+					return {
+						error: `Note "${n}" (${nr}) is out of MIDI-Range [0 ... 127]`
+					};
 				} else {
 					return {
 						name: m[1],
@@ -614,25 +611,24 @@ class Note {
 					};
 				}
 			} else {
-				throw new InputError(
-					`Couldn't find "${m[1]}" of "${n}" in NOTE_NAMES`,
-					lNr
-				);
+				return {
+					error: `Couldn't find "${m[1]}" of "${n}" in NOTE_NAMES`,
+				};
 			}
 		} else {
-			throw new InputError(
-				`Couldn't interprete note "${m[1]}"`,
-				lNr
-			);
+			return undefined;
 		}
 	}
 }
 
 class Command {
-	static regex = /[a-z]+/g;
+	static regex = /^[a-z]+$/;
 
-	static replace = function (cmd) {
-
+	constructor (cmd) {
+		let m = cmd.match(Command.regex);
+		if (m) {
+			let 
+		}
 	}
 }
 
@@ -640,7 +636,7 @@ function translateLine(line, lNr) {
 	return line
 		.toLowerCase()
 		.replace(/\s*\/\/.*/g, "") // remove comments
-		.replace(/[;.<>"'={}&|!%^:_@?]/g, " ") // replace symbols
+		.replace(/[;<>"'={}&|!%^:_@?]/g, " ") // replace symbols
 		//.replace(/(\S)any/g, "$1 any") // space any
 		.replace(Command.regex, (_m, a) => {
 			let t = T(a);
@@ -699,19 +695,7 @@ class Mapping {
 	send = [];
 
 	constructor(string) {
-		let commands = [];
-		let lNr = 1;
-		string = string.replace(/\s*\/\/.*/g, ""); // remove comments
-		let lines = string.split(/\n/);
-		lines.iterate(line => {
-			++lNr;
-			let elements = line.split(/ /);
-			elements.forEach(el => {
-				Note.names.forEach(noteName => {
-					
-				});
-			});
-		});
+
 	}
 
 	toString() {
@@ -850,15 +834,18 @@ class Range {
 	constructor(start, end, lNr = 0) {
 		if (isNaN(start)) {
 			throw new InputError(
-				`Range "${start}"-"${end}": "${start}" is not a number`
+				`Range "${start}"-"${end}": "${start}" is not a number`,
+				lNr
 			);
 		} else if (isNaN(end)) {
 			throw new InputError(
-				`Range "${start}"-"${end}": "${end}" is not a number`
+				`Range "${start}"-"${end}": "${end}" is not a number`,
+				lNr
 			);
 		} else if (Number(start) > Number(end)) {
 			throw new InputError(
-				`Range "${start}"-"${end}": "${start}" is greater than "${end}"`
+				`Range "${start}"-"${end}": "${start}" is greater than "${end}"`,
+				lNr
 			);
 		}
 		this.start = Number(start);
@@ -913,14 +900,62 @@ class Sequence {
 	}
 }
 
-// DEBUG >>
-Trace("Starting to create mapping...");
-MIDI_MAPPING = MIDI_MAPPING_EXAMPLE;
-// << DEBUG
+class MidiMapping {
+	mappings = [];
+	commands = [];
+
+	constructor(string) {
+		this.lNr = 1;
+		string
+			.replace(/\s*\/\/.*/g, "") // remove comments
+			.replace(/[;<>"'={}&|!%^:_@?]/g, " ") // replace symbols
+			.split(/\n/)
+			.forEach(this.interpreteLine)
+		;
+	}
+
+	interpreteLine(line) {
+		line
+			.split(/ /)
+			.forEach(this.interpreteCommand)
+		;
+		++this.lNr;
+	}
+
+	interpreteCommand(cmd) {
+		if (!cmd.match(/\S/)) {
+			return; // empty cmd
+		}
+
+		let note = new Note(cmd);
+		if (note) {
+			if (note.error) {
+				throw new InputError(note.error, this.lNr);
+			} else {
+				this.commands.push(note);
+				return;
+			}
+		}
+
+		let command = new Command(cmd);
+		if (command) {
+			if (command.error) {
+				throw new InputError(command.error);
+			} else {
+				this.commands.push(command);
+				return;
+			}
+		}
+	}
+
+	toString() {
+
+	}
+}
 
 Note.setNames(NOTE_NAMES);
-let mapping = new Mapping(MIDI_MAPPING);
-Trace(mapping.toString());
+let midiMapping = new MidiMapping(MIDI_MAPPING);
+Trace(midiMapping.toString());
 
 function HandleMIDI(event) {
 	let mapped = mapping.handleMIDI(event);
