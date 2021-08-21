@@ -123,7 +123,7 @@ Short Example: (Go to MIDI_MAPPING = ``; to configure your mapping)
 	receive
 		channel 1 - 5                 // receives channel 1, 2, 3, 4 and 5
 			type continousControl
-				number 1, 11            // receives cc1 and cc11
+				number 1, 11            // receives cc1 and cc11 from channels 1 - 5
 					value any            // receives any value from cc1 and cc11 from channels 1 - 5
 	send
 		channel 2
@@ -132,6 +132,35 @@ Short Example: (Go to MIDI_MAPPING = ``; to configure your mapping)
 					value input          // send received input value
 			type programChange
 				number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
+
+
+	r 1 cc 30  1 s nr 51 [0, 127]
+	r 1 cc 30  3 s nr 52 [0, 127]
+	r 1 cc 30  5 s nr 53 [0, 127]
+	r 1 cc 30  7 s nr 54 [0, 127]
+	r 1 cc 30  9 s nr 55 [0, 127]
+	r 1 cc 30 11 s nr 56 [0, 127]
+	r 1 cc 30 13 s nr 57 [0, 127]
+	r 1 cc 30 15 s nr 58 [0, 127]
+	// r 1 cc 17 5 s nr 59 [0, 127] master mute ?
+
+	// TODO AudioModeling Half and Half
+	r 16 cc 11 s cc 12 127-i*4 
+	r 16 cc 11 s cc 13 i*4-381 // 127*(4-1)
+`;
+
+var PASS_THROUGH_INPUT = false; // true or false
+var SEND_UNMAPPED_MIDI = true; // true or false
+
+var MIDDLE_C_NUMBER = 4; // corresponds to midi note 60 ≈ 256 Hz
+var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
+// Can be modified, german for example: "c, cis, d, dis, e, f, fis, g, gis, a, b, h"
+// Allowed are only letters "a" to "z" and "#"
+
+////////////////////////////////// MANUAL ////////////////////////////////////
+
+This is hopefully the most advanced and fastest but easy to understand midiMapper for Mainstage.
+https://github.com/88thman/mainstageScripts // TODO
 	
 
 MIDI-Messages: (for receiving and sending)
@@ -175,6 +204,10 @@ MIDI-Messages: (for receiving and sending)
 			channelPressure any     = Any number of channelpressure
 			pitchBend -2000-2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
 			pitchBend -10--5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
+		
+		Important:
+			<noteName> consists of the previously defined NOTE_NAMES and a octave-number
+			Examples: Fis3, IV#2, a#-1, Do5, ...
 
 Send-MIDI-Value:
 
@@ -512,7 +545,7 @@ var dict = {
 };
 
 function T(t) {
-	if (dict[t]) {
+	if (t in dict) {
 		return dict[t];
 	} else {
 		return undefined;
@@ -668,7 +701,7 @@ class Message {
 var m, mappings = [];
 
 class Note {
-	static regex = /\b([a-z#]+)(-?[0-9])\b/g;
+	static regex = /\b([a-z#]+)(-?[0-9]+)\b/ig;
 	static names = [];
 
 	static setNames(string) {
@@ -802,6 +835,14 @@ class Mapping {
 		this.send.forEach(s => array.push(s.toString()));
 		array.push('---------------------------------------');
 		return array.join('\n');
+	}
+	handleMIDI(event) {
+		this.receive.forEach(r => {
+			if (r.match(event)) {
+				this.send.forEach(s => s.send(event));
+				break;
+			}
+		});
 	}
 }
 
@@ -1006,6 +1047,20 @@ let mapping = new Mapping(MIDI_MAPPING);
 Trace(mapping.toString());
 
 function HandleMIDI(event) {
+	let mapped = mapping.handleMIDI(event);
+	if (mapped) {
+		if (PASS_THROUGH_INPUT) {
+			event.send();
+		}
+	} else { // not mapped
+		if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
+			event.send();
+		}
+	}
+}
+
+/*
+function HandleMIDI(event) {
 	let key = RegExp(
 		event
 			.toString()
@@ -1032,8 +1087,6 @@ function HandleMIDI(event) {
 function Trace(string) {
 	console.log(string);
 }
-
-/*
 
 [ControlChange channel:1 number:100 [Reg.Par. LSB] value:100]
 [NoteOn channel:1 pitch:100 [E6] velocity:100]
