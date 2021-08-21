@@ -13,8 +13,8 @@ var MIDI_MAPPING = ` // Please leave this on line-number 2 to get accurate error
 	// r 1 cc 17 5 s nr 59 [0, 127] master mute ?
 
 	// TODO AudioModeling Half and Half
-	r 16 cc 11 s cc 12 127-i*4
-	r 16 cc 11 s cc 13 i*4-381
+	r 16 cc 11 s cc 12 127-i*4 
+	r 16 cc 11 s cc 13 i*4-381 // 127*(4-1)
 `;
 
 var PASS_THROUGH_INPUT = false; // true or false
@@ -22,8 +22,8 @@ var SEND_UNMAPPED_MIDI = true; // true or false
 
 var MIDDLE_C_NUMBER = 4; // corresponds to midi note 60
 var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
-// can be modified, german for example: 'c, cis, d, dis, e, f, fis, g, gis, a, b, h'
-// be careful to not use any of the abbreviations, it might not work
+// Can be modified, german for example: "c, cis, d, dis, e, f, fis, g, gis, a, b, h"
+// Allowed are only letters "a" to "z" and "#"
 
 /*////////////////////////////////// MANUAL ////////////////////////////////////
 
@@ -87,6 +87,10 @@ MIDI-Messages: (for receiving and sending)
 			channelPressure any     = Any number of channelpressure
 			pitchBend -2000-2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
 			pitchBend -10--5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
+		
+		Important:
+			<noteName> consists of the previously defined NOTE_NAMES and a octave-number
+			Examples: Fis3, IV#2, h-1,...
 
 Send-MIDI-Value:
 
@@ -396,7 +400,7 @@ var dict = {
 };
 
 function T(t) {
-	if (dict[t]) {
+	if (t in dict) {
 		return dict[t];
 	} else {
 		return undefined;
@@ -551,7 +555,7 @@ class Message {
 var m, mappings = [];
 
 class Note {
-	static regex = /\b([a-z#]+)(-?[0-9])\b/g;
+	static regex = /\b([a-z#]+)(-?[0-9]+)\b/ig;
 
 	static number(n, lNr = 0) {
 		let m = n.match(this.regex);
@@ -587,7 +591,7 @@ class Note {
 }
 
 class Command {
-	static regex = /\b([a-z]+)(?=\s|$)/g;
+	static regex = /\b([a-z]+)(?=\s|$)/ig;
 
 	static // HERE I AM #########################################################################
 }
