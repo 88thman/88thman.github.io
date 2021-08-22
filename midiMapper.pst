@@ -139,7 +139,8 @@ var SEND_UNMAPPED_MIDI = true; // true or false
 var MIDDLE_C_NUMBER = 4; // corresponds to midi note 60
 var NOTE_NAMES = "c, c#, d, d#, e, f, f#, g, g#, a, a#, b";
 // Can be modified, german for example: "c, cis, d, dis, e, f, fis, g, gis, a, b, h"
-// Allowed are only letters "a" to "z" and "#"
+// Allowed are only letters "a" to "z", "#" and "_"
+// Examples: D, D_Sharp, d#, d##, Hb, Es, I, II, III, IV, vii_#, ...
 
 
 
@@ -277,7 +278,7 @@ Pro-Tips:
 
 	a) You can use spaces, line breaks and following symbols to beautify your mappings:
 		
-		;<>"'={}&|!%^:_@?
+		;<>"'={}&|!%^:@?
 		
 		Example:
 			receive: channel 1; type noteOn; number g#4
@@ -429,15 +430,6 @@ var dict = {
 
 	any: "any"
 };
-
-function T(t) {
-	t = t.toLowerCase();
-	if (t in dict) {
-		return dict[t];
-	} else {
-		return undefined;
-	}
-}
 
 class NoteOff { }
 class NoteOn { }
@@ -621,40 +613,6 @@ class Note {
 	}
 }
 
-class Command {
-	static regex = /^[a-z]+$/;
-
-	constructor (cmd) {
-		let m = cmd.match(Command.regex);
-		if (m) {
-			let 
-		}
-	}
-}
-
-function translateLine(line, lNr) {
-	return line
-		.toLowerCase()
-		.replace(/\s*\/\/.*/g, "") // remove comments
-		.replace(/[;<>"'={}&|!%^:_@?]/g, " ") // replace symbols
-		//.replace(/(\S)any/g, "$1 any") // space any
-		.replace(Command.regex, (_m, a) => {
-			let t = T(a);
-			if (t === undefined) {
-				throw new InputError(
-					`Sorry, I can't figure out what "${a}" means.`,
-					lNr
-				);
-			}
-			return " " + t + " ";
-		})
-		.replace(Note.regex, Note.number)
-		.replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
-		.replace(/\s+/g, " ") // replace whitespaces
-		.replace(/\[\s*/g, "[") // remove spaces after [
-		.replace(/\s*\]/g, "]") // remove spaces before ]
-		.replace(/^ | $/g, ""); // remove first and last space
-}
 
 function interpretCommand(cmd, lNr) {
 	
@@ -829,7 +787,6 @@ function createMappings() {
 }
 
 class Range {
-	static regex = /(-?[0-9]+)-(-?[0-9]+)/g;
 
 	constructor(start, end, lNr = 0) {
 		if (isNaN(start)) {
@@ -877,21 +834,15 @@ class Range {
 }
 
 class Sequence {
-	constructor(string, lNr = 0) {
-		this.iterator = -1;
-		string = Range.replace(string);
-		this.values = string.split(/,/);
-		this.values.forEach((v) => {
-			if (isNaN(v)) {
-				throw new InputError(
-					`Sequence [${string}]: "${v}" is not a number`
-				);
-			}
-		});
-	}
+	iterator = -1;
+	items = [];
 
-	toString() {
-		return `[${this.values.join(', ')}]`;
+	constructor(a) {
+		if (Array.isArray(a)) {
+			this.items = a;
+		} else {
+			this.error = `Sequence: ${a} is not an array`;
+		}
 	}
 
 	get() {
@@ -908,7 +859,9 @@ class MidiMapping {
 		this.lNr = 1;
 		string
 			.replace(/\s*\/\/.*/g, "") // remove comments
-			.replace(/[;<>"'={}&|!%^:_@?]/g, " ") // replace symbols
+			.replace(/[;<>"'={}&|!%^:@?]/g, " ") // replace symbols
+			.replace(/(?<=\[)\s*|\s*(?=\])/g, "") // remove spaces between brackets
+			.replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
 			.split(/\n/)
 			.forEach(this.interpreteLine)
 		;
@@ -916,6 +869,7 @@ class MidiMapping {
 
 	interpreteLine(line) {
 		line
+			.replace(/\s+/g, " ") // replace unnecessary spaces
 			.split(/ /)
 			.forEach(this.interpreteCommand)
 		;
@@ -926,30 +880,71 @@ class MidiMapping {
 		if (!cmd.match(/\S/)) {
 			return; // empty cmd
 		}
+		
+		Interprete.All(result);
 
-		let note = new Note(cmd);
-		if (note) {
-			if (note.error) {
-				throw new InputError(note.error, this.lNr);
-			} else {
-				this.commands.push(note);
-				return;
-			}
-		}
-
-		let command = new Command(cmd);
-		if (command) {
-			if (command.error) {
-				throw new InputError(command.error);
-			} else {
-				this.commands.push(command);
-				return;
-			}
-		}
 	}
 
 	toString() {
 
+	}
+}
+
+var Interprete = {
+	All: function(result) {
+
+	},
+
+	Sequence: function(string) {
+		const regex = /\[([^\]]+)\]/g;
+
+		if (string.match(regex)) {
+			let array = [];
+			string = string.replace(regex, (m, a) => {
+				
+				return "";
+			});
+		} else {
+			return undefined;
+		}
+
+		string = new Interprete.Range(string).replace();
+	},
+
+	Range: function(string) { // 
+		const regex = /(-?[0-9]+)-(-?[0-9]+)/g;
+
+		let m = string.match(regex);
+		if (m) {
+			m.iterate(i => {
+
+			});
+		} else {
+			return undefined;
+		}
+
+		this.replace = function() {
+
+		}
+	},
+
+	Command: function (string) {
+		const regex = /\b[a-z]+\b/gi;
+
+		string = string.toLowerCase();
+		let m = string.match(regex);
+		if (m) {
+			m.iterate(i => {
+				if (i in dict) {
+					return dict[i];
+				} else {
+					m.error = `Couldn't find ${i} in dict`;
+				}
+			});
+			return m;
+		} else {
+			return undefined;
+		}
 	}
 }
 
