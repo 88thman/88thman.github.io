@@ -1,7 +1,9 @@
 const MIDI_MAPPING = ` // Please leave this on line-number 1 to get accurate error-messages
 
+r t cc s nr 1, 4..2, g#2..b2, 2, [2,13 ..9, 4..5, 8], 6, 2..4 
+
 receive
-	channel 1 - 5       // receives channel 1, 2, 3, 4 and 5
+	channel 1 .. 5       // receives channel 1, 2, 3, 4 and 5
 		type continousControl
 			number 1, 11  // receives cc1 and cc11
 				value any // receives any value from cc1 and cc11 from channels 1 - 5
@@ -11,7 +13,7 @@ send
 			number input            // in this case either cc1 or cc11
 				value input          // send received input value
 		type programChange
-			number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
+			number [5, 2, 9, 1 .. 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
 
 receive: channel any; type continousControl; number 113;   value any
 send:   channel input;     type input;      number input; value input
@@ -35,8 +37,8 @@ s: ch  10; typ cc; nr 1,11; val i   // Modulation & Expression
 	s ch:3 v:i+2
 
 	r 6 s 5                   // Receives channel 6, sends to channel 5
-	r 2 cc 1-3                // Block cc 1, 2 and 3 from channel 2
-	r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
+	r 2 cc 1..4               // Block cc 1, 2, 3 and 4 from channel 2
+	r any pc s i cc 30 [1..5] // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
 
 
 
@@ -56,7 +58,7 @@ channel 1
 
 // [2 Abbreviations] Pass through cc 1 and 11 from channels 2 to 12:
 rec
-ch: 2-12
+ch: 2..12
 	typ: cc
 		nr: 1, 11
 			val: any
@@ -100,11 +102,11 @@ ch: 4
 r
 ch: 5
 	typ: cc 
-		nr: 1-11
+		nr: 1..11
 
 
 	receive
-		channel 1 - 5                 // receives channel 1, 2, 3, 4 and 5
+		channel 1 .. 5                 // receives channel 1, 2, 3, 4 and 5
 			type continousControl
 				number 1, 11            // receives cc1 and cc11 from channels 1 - 5
 					value any            // receives any value from cc1 and cc11 from channels 1 - 5
@@ -114,7 +116,7 @@ ch: 5
 				number input            // in this case either cc1 or cc11
 					value input          // send received input value
 			type programChange
-				number [5, 2, 9, 1 - 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
+				number [5, 2, 9, 1 .. 3] // Send sequentially 5, 2, 9, 1, 2, 3 and repeat
 
 
 	r 1 cc 30  1 s nr 51 [0, 127]
@@ -128,8 +130,8 @@ ch: 5
 	// r 1 cc 17 5 s nr 59 [0, 127] master mute ?
 
 	// TODO AudioModeling Half and Half
-	r 16 cc 11 s cc 12 127-i*4 
-	r 16 cc 11 s cc 13 i*4-381 // 127*(4-1)
+	r 16 cc 11 s cc 12 127-i*4 // 127-i*x
+	r 16 cc 11 s cc 13 i*4-381 // i*x-127*(x-1)
 
 `;
 
@@ -155,10 +157,10 @@ MIDI-Messages: (for receiving and sending)
 	channel 1 ... 16, any
 	
 		Examples:
-			channel any   = Any channel
-			channel 15    = Channel 15
-			channel1,2    = Channel 1 and 2
-			channel 3 - 6 = Channels 3, 4, 5 and 6
+			channel any    = Any channel
+			channel 15     = Channel 15
+			channel1,2     = Channel 1 and 2
+			channel 3 .. 6 = Channels 3, 4, 5 and 6
 		
 	
 	type, number, value:
@@ -179,18 +181,18 @@ MIDI-Messages: (for receiving and sending)
 		+------------------+----------------------------+-----------------+
 	
 		Examples:
-			noteOn 60               = Only noteOn 60 (Middle C)
-			noteOff g4-a#6          = NotesOff between g4 and a#6 (including those)
-			c0, c1, c#7             = NotesOn: c0, c1 and c#7
-			polyPressure 1-10       = PolyPressure of notes 1, 2, 3, ..., 10
-			polyPressure d#3        = PolyPressure of note d#3
-			controlChange any       = Any continous controller
-			continousControl 1,4    = Continous controllers 1 and 4
-			continousControl1,11-13 = Continous controllers 1, 11, 12 and 13
-			programChange 100       = Program change 100
-			channelPressure any     = Any number of channelpressure
-			pitchBend -2000-2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
-			pitchBend -10--5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
+			noteOn 60                = Only noteOn 60 (Middle C)
+			noteOff g4..a#6          = NotesOff between g4 and a#6 (including those)
+			c0, c1, c#7              = NotesOn: c0, c1 and c#7
+			polyPressure 1..10       = PolyPressure of notes 1, 2, 3, ..., 10
+			polyPressure d#3         = PolyPressure of note d#3
+			controlChange any        = Any continous controller
+			continousControl 1,4     = Continous controllers 1 and 4
+			continousControl1,11..13 = Continous controllers 1, 11, 12 and 13
+			programChange 100        = Program change 100
+			channelPressure any      = Any number of channelpressure
+			pitchBend -2000..2000    = Pitchbends -2000, -1999, -1998, ..., 1999, 2000
+			pitchBend -10..-5,3      = Pitchbends -10, -9, -8, -7, -6, -5, 3
 		
 		Important:
 			<noteName> consists of the previously defined NOTE_NAMES and a octave-number
@@ -199,7 +201,7 @@ MIDI-Messages: (for receiving and sending)
 Send-MIDI-Value:
 
 	<number>                = Send number
-	<number1>-<number2>     = Send all numbers between number1 and number2 (including those)
+	<number1>..<number2>    = Send all numbers between number1 and number2 (including those)
 	[<number>,<number>,...] = Send sequence
 	input                   = Send input
 	input<modification>     = Send modified input
@@ -318,8 +320,8 @@ Pro-Tips:
 	
 		Examples:
 			r 6 s 5                   // Receives channel 6, sends to channel 5
-			r 2 cc 1-3                // Block cc 1, 2 and 3 from channel 2
-			r any pc s i cc 30 [1-5]  // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
+			r 2 cc 1..3               // Block cc 1, 2 and 3 from channel 2
+			r any pc s i cc 30 [1..5] // Route programChanges to cc 30 and step through sequence [1, 2, 3, 4, 5]
 */
 
 /////////////////////////// EXAMPLE (can be deleted) ///////////////////////////
@@ -350,6 +352,13 @@ var MIDI_MAPPING_EXAMPLE = `
 /////////////////// CODE - DO NOT EDIT (unless you know how) ///////////////////
 let info = '\nGet help at: http://github.com/88thman'; // TODO aktuell
 
+class InputError extends Error {
+	constructor(msg) {
+		super(msg);
+		this.name = 'InputError'
+	}
+}
+
 if (Array.prototype.iterate === undefined) {
 	Array.prototype.iterate = function (func) {
 		let i = -1, l = this.length;
@@ -358,19 +367,9 @@ if (Array.prototype.iterate === undefined) {
 		}
 	};
 } else {
-	throw new Error('Array.prototype.iterate already defined!' + info);
+	new InputError('Array.prototype.iterate already defined!' + info);
 }
 
-class InputError extends Error {
-	constructor(msg, lNr = 0) {
-		if (lNr) {
-			super(`[Line: ${lNr}] ${msg + info}`);
-		} else {
-			super(msg + info);
-		}
-		this.name = "Input Error";
-	}
-}
 
 var dict = {
 	r: "receive",
@@ -468,7 +467,6 @@ class Collection {
   }
 }
 
-
 class Message {
 	static HIERARCHY = ["channels", "types", "numbers", "values"];
 	iterator = 0;
@@ -493,7 +491,7 @@ class Message {
 		let m = new Message(this.initState);
 		let i = this.HIERARCHY.indexOf(depth) + 1;
 		while (i--) {
-			m[this.HIERARCHY[i]] = this[this.HIERARCHY[i]]; // TODO clone object
+			m[Message.HIERARCHY[i]] = this[Message.HIERARCHY[i]];
 		}
 		return m;
 	}
@@ -577,43 +575,6 @@ class Message {
 	} // send()
 }
 
-class Note {
-	static regex = /^([a-z#]+)(-?[0-9]+)$/;
-	static names = [];
-
-	static setNames(string) {
-		Note.names = string.replace(/\s/g, "").split(/,/);
-	} 
-
-	constructor(n) {
-		let m = n.match(Note.regex);
-		if (m) {
-			let pos = noteNames.indexOf(m[1]);
-			if (pos !== -1) {
-				let nr = pos + 12 * (5 - MIDDLE_C_NUMBER + Number(m[2]));
-				if (nr < 0 || nr > 127) {
-					return {
-						error: `Note "${n}" (${nr}) is out of MIDI-Range [0 ... 127]`
-					};
-				} else {
-					return {
-						name: m[1],
-						octave: Number(m[2]),
-						number: nr
-					};
-				}
-			} else {
-				return {
-					error: `Couldn't find "${m[1]}" of "${n}" in NOTE_NAMES`,
-				};
-			}
-		} else {
-			return undefined;
-		}
-	}
-}
-
-
 function interpretCommand(cmd, lNr) {
 	
 	let array = [];
@@ -666,10 +627,12 @@ class Mapping {
 		return array.join('\n');
 	}
 	handleMIDI(event) {
-		this.receive.forEach(r => {
+		this.receive.every(r => {
 			if (r.match(event)) {
 				this.send.forEach(s => s.send(event));
-				break;
+				return false; // break every
+			} else {
+				return true; // continue every
 			}
 		});
 	}
@@ -786,54 +749,8 @@ function createMappings() {
 	});
 }
 
-class Range {
-
-	constructor(start, end, lNr = 0) {
-		if (isNaN(start)) {
-			throw new InputError(
-				`Range "${start}"-"${end}": "${start}" is not a number`,
-				lNr
-			);
-		} else if (isNaN(end)) {
-			throw new InputError(
-				`Range "${start}"-"${end}": "${end}" is not a number`,
-				lNr
-			);
-		} else if (Number(start) > Number(end)) {
-			throw new InputError(
-				`Range "${start}"-"${end}": "${start}" is greater than "${end}"`,
-				lNr
-			);
-		}
-		this.start = Number(start);
-		this.end = Number(end);
-	}
-
-	toString() {
-		return this.start + '-' + this.end;
-	}
-
-	withinRange(n) {
-		return Number(n) >= this.start && Number(n) <= this.end;
-	}
-	forEach(func) {
-		for (let i = this.start; i <= this.end; ++i) {
-			func(i);
-		}
-	}
-
-	static replace(string) {
-		return string.replace(Range.regex, (m, a, b) => {
-			let array = [];
-			for(let i = Number(a); i <= Number(b); i++) {
-				array.push(i);
-			}
-			return array.join(',');
-		});
-	}
-}
-
 class Sequence {
+	static regex = /\[([^\]]+,[^\]]+)\]/g;
 	iterator = -1;
 	items = [];
 
@@ -841,8 +758,12 @@ class Sequence {
 		if (Array.isArray(a)) {
 			this.items = a;
 		} else {
-			this.error = `Sequence: ${a} is not an array`;
+			throw new InputError(`Sequence: ${a} isn't an array`);
 		}
+	}
+
+	toString() {
+		return `[${this.items.join(', ')}]`;
 	}
 
 	get() {
@@ -851,118 +772,200 @@ class Sequence {
 	}
 }
 
-class MidiMapping {
-	mappings = [];
-	commands = [];
+class Range {
+	static regex = /(-?[0-9]+)\.\.(-?[0-9]+)/g;
+	start = 0;
+	end = 0;
 
-	constructor(string) {
-		this.lNr = 1;
-		string
-			.replace(/\s*\/\/.*/g, "") // remove comments
-			.replace(/[;<>"'={}&|!%^:@?]/g, " ") // replace symbols
-			.replace(/(?<=\[)\s*|\s*(?=\])/g, "") // remove spaces between brackets
-			.replace(/ *([-+*/,]) */g, "$1") // remove spaces around -+*/,
-			.split(/\n/)
-			.forEach(this.interpreteLine)
-		;
-	}
-
-	interpreteLine(line) {
-		line
-			.replace(/\s+/g, " ") // replace unnecessary spaces
-			.split(/ /)
-			.forEach(this.interpreteCommand)
-		;
-		++this.lNr;
-	}
-
-	interpreteCommand(cmd) {
-		if (!cmd.match(/\S/)) {
-			return; // empty cmd
+	constructor(start, end) {
+		if (isNaN(start)) {
+			throw new InputError(`"${start}..${end}": "${start}" isn't a number`);
+		} else if (isNaN(end)) {
+			throw new InputError(`"${start}..${end}": "${end}" isn't a number`);
 		}
-		
-		Interprete.All(result);
-
+		this.start = Number(start);
+		this.end = Number(end);
 	}
 
 	toString() {
+		return this.start + '..' + this.end;
+	}
 
+	withinRange(n) {
+		if (this.start <= this.end) {
+			return Number(n) >= this.start && Number(n) <= this.end;
+		} else {
+			return Number(n) >= this.end && Number(n) <= this.start;
+		}
+	}
+	forEach(func) {
+		if (this.start <= this.end) {
+			for (let i = this.start; i <= this.end; ++i) {
+				func(i);
+			}
+		} else {
+			for (let i = this.start; i >= this.end; --i) {
+				func(i);
+			}
+		}
+	}
+
+	static replace(string) {
+		return string.replace(Range.regex, (_m, a, b) => {
+			let array = [];
+			let range = new Range(a, b);
+			range.forEach(el => array.push(el));
+			return array.join(',');
+		});
 	}
 }
 
-var Interprete = {
-	All: function(result) {
+class Note {
+	static regex = /\b([a-z#_]+)(-?[0-9]+)\b/ig;
+	static names = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
+	static middleC = 4;
+	
+	static setNames(string) {
+		Note.names = string.replace(/\s/g, "").split(/,/);
+		Trace(`Note.names = [${Note.names.join(',')}]`);
+	}
+	static setMiddleC(nr) {
+		Note.middleC = Number(nr);
+		Trace(`Note.middleC = ${Note.middleC}`);
+	}
 
-	},
+	constructor(name, octave) {
+		this.name = name;
+		this.octave = octave;
+		this.nr = 0;
 
-	Sequence: function(string) {
-		const regex = /\[([^\]]+)\]/g;
-
-		if (string.match(regex)) {
-			let array = [];
-			string = string.replace(regex, (m, a) => {
-				
-				return "";
-			});
+		let pos = Note.names.indexOf(name);
+		if (pos !== -1) {
+			this.nr = pos + 12 * (5 - Note.middleC + Number(octave));
+			if (this.nr < 0 || this.nr > 127) {
+				throw new InputError(`Note "${name + octave}" (${this.nr}) is out of MIDI-Range [0 ... 127]`);
+			}
 		} else {
-			return undefined;
+			throw new InputError(`"${name}" not in NOTE_NAMES`);
+		}
+	}
+
+	toString() {
+		return `♪ ${this.name + this.octave} (${this.nr})`;
+	}
+}
+
+class Command{
+	static regex = /^[a-z]+$/i;
+	constructor(string) {
+		this.cmd = dict[string.toLowerCase()];
+		if (this.cmd === undefined) {
+			throw new InputError(`"${string}" not in command-dictionary`);
+		}
+	}
+
+	toString() {
+		return `> ${this.cmd}`;
+	}
+}
+
+class MidiMap {
+	mappings = [];
+
+	constructor(string) {
+		let lNr = 1;
+		string
+			.replace(/\s*\/\/.*/g, "") // remove comments
+			.replace(/[;<>"'={}&|!%^:@?]/g, " ") // replace symbols
+			.replace(/(?<=\[)\s*|\s*(?=\])/g, "") // remove spaces in brackets
+			.replace(/ *([-+*/,.]) */g, "$1") // remove spaces around -+*/,
+			.split(/\n/)
+			.forEach(line => {
+				line = line.replace(/\s/g, ' ');
+				line.split(/ /).forEach(el => {
+					if (!el.match(/\S/)) {
+						return; // empty el
+					}
+					MidiMap.read(el, lNr).forEach(cmd => {
+						Trace(cmd);
+					});
+				})
+				++lNr;
+			})
+		;
+	}
+
+	static read(string, lNr) {
+		if (string.match(Command.regex)) {
+			return [new Command(string)];
 		}
 
-		string = new Interprete.Range(string).replace();
-	},
+		let array = [];
 
-	Range: function(string) { // 
-		const regex = /(-?[0-9]+)-(-?[0-9]+)/g;
+		string = string.replace(Sequence.regex, (_m, a) => {
+			array.push(
+				new Sequence(
+					MidiMap.read(
+						Range.replace(a),
+					)
+				)
+			);
+			return '';
+		});
 
-		let m = string.match(regex);
-		if (m) {
-			m.iterate(i => {
+		string = string.replace(Note.regex, (_m, a, b) => {
+			let note = new Note(a, b);
+			//array.push(note);
+			return note.nr;
+		});
 
-			});
-		} else {
-			return undefined;
-		}
+		string = string.replace(Range.regex, (_m, a, b) => {
+			array.push(new Range(a, b));
+			return '';
+		});
 
-		this.replace = function() {
-
-		}
-	},
-
-	Command: function (string) {
-		const regex = /\b[a-z]+\b/gi;
-
-		string = string.toLowerCase();
-		let m = string.match(regex);
-		if (m) {
-			m.iterate(i => {
-				if (i in dict) {
-					return dict[i];
-				} else {
-					m.error = `Couldn't find ${i} in dict`;
+		if (string.match(/,/)) {
+			string.split(',').forEach(i => {
+				if (i.match(/\S/)) {
+					array.push(MidiMap.read(i));
 				}
 			});
-			return m;
-		} else {
-			return undefined;
+			return array;
 		}
+
+		if (string.match(/^\d+$/)) {
+			array.push(Number(string));
+			return array;
+		}
+
+		if (string.match(/\S/)) Trace(`Left: "${string}"`)
+
+		return array;
+	}
+
+	toString() {
+		return 'MidiMap.toString(): Something is comming...';
+	}
+
+	handleMIDI(event) {
+
 	}
 }
 
+Note.setMiddleC(MIDDLE_C_NUMBER);
 Note.setNames(NOTE_NAMES);
-let midiMapping = new MidiMapping(MIDI_MAPPING);
-Trace(midiMapping.toString());
+let midiMap = new MidiMap(MIDI_MAPPING);
+Trace(midiMap.toString());
 
 function HandleMIDI(event) {
-	let mapped = mapping.handleMIDI(event);
-	if (mapped) {
-		if (PASS_THROUGH_INPUT) {
-			event.send();
-		}
-	} else { // not mapped
-		if (SEND_UNMAPPED_MIDI || PASS_THROUGH_INPUT) {
-			event.send();
-		}
+	let mapped = midiMap.handleMIDI(event);
+	if (PASS_THROUGH_INPUT || (SEND_UNMAPPED_MIDI && !mapped)) {
+		event.send();
 	}
+}
+
+function Trace(string) {
+	console.log(string);
 }
 
 /*
@@ -990,9 +993,6 @@ function HandleMIDI(event) {
 	}
 }
 
-function Trace(string) {
-	console.log(string);
-}
 
 [ControlChange channel:1 number:100 [Reg.Par. LSB] value:100]
 [NoteOn channel:1 pitch:100 [E6] velocity:100]
