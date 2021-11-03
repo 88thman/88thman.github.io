@@ -1,7 +1,7 @@
-let LiN = {
-  load: function(){
-    
-  }
+let LiN = {};
+
+LiN.load = function() {
+
 };
 
 window.addEventListener('load', LiN.load);
