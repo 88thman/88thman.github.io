@@ -9,23 +9,23 @@ console.log(LiN.count);
 LiN.load = function() {
   console.log("loaded");
 };
-
-
-window.addEventListener('load', LiN.load);
-
-var midi = null;  // global MIDIAccess object
-function onMIDISuccess( midiAccess ) {
+LiN.midi = {
+  works: false
+};
+LiN.midi.init = function (midiAccess) {
+  LiN.midi.works = true;
   console.log( "MIDI ready!" );
-  midi = midiAccess;  // store in the global (in real usage, would probably keep in an object instance)
   listInputsAndOutputs(midiAccess);
 }
-
-function onMIDIFailure(msg) {
+LiN.midi.noMidi = function (msg) {
+  LiN.midi.works = false;
   console.log( "Failed to get MIDI access - " + msg );
 }
 
-navigator.requestMIDIAccess().then( onMIDISuccess, onMIDIFailure );
+window.addEventListener('load', LiN.load);
+navigator.requestMIDIAccess().then( LiN.midi.init, LiN.midi.noMidi );
 
+/*
 function listInputsAndOutputs( midiAccess ) {
   console.log( "List of Ports:" );
   for (var entry of midiAccess.inputs) {
@@ -42,3 +42,4 @@ function listInputsAndOutputs( midiAccess ) {
       "' version:'" + output.version + "'" );
   }
 }
+*/
