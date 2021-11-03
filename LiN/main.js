@@ -20,6 +20,7 @@ function onMIDIFailure(msg) {
 navigator.requestMIDIAccess().then( onMIDISuccess, onMIDIFailure );
 
 function listInputsAndOutputs( midiAccess ) {
+  console.log( "List of Ports:" );
   for (var entry of midiAccess.inputs) {
     var input = entry[1];
     console.log( "Input port [type:'" + input.type + "'] id:'" + input.id +
