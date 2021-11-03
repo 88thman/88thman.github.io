@@ -1,3 +1,7 @@
-window.onload = (){
-  console.log("loaded");
+let LiN = {
+  load: function(){
+    
+  }
 };
+
+window.addEventListener('load', LiN.load);
