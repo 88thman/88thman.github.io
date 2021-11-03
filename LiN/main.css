@@ -7,3 +7,8 @@ body {
     background-color: rgb(25, 10, 25);
     color: rgb(255, 255, 255);
 }
+
+#HEADER * {
+    display: inline-block;
+    height: 1em;
+}
