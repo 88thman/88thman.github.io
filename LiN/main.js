@@ -1,5 +1,5 @@
 let LiN = {
-  readonly count: "sdf"
+  count: "sdf"
 };
 
 console.log(LiN.count);
