@@ -1,8 +1,15 @@
-let LiN = {};
+let LiN = {
+  readonly count: "sdf"
+};
+
+console.log(LiN.count);
+LiN.count = "mopet";
+console.log(LiN.count);
 
 LiN.load = function() {
   console.log("loaded");
 };
+
 
 window.addEventListener('load', LiN.load);
 
