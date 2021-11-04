@@ -1,10 +1,16 @@
-let LiN = {
-  count: "sdf"
-};
+function LiN() {
+  
+}
 
-console.log(LiN.count);
-LiN.count = "mopet";
-console.log(LiN.count);
+function Midi() {
+}
+Midi.available = false;
+
+Midi.prototype.load = function() {
+
+}
+
+let midi = new Midi();
 
 LiN.load = function() {
   console.log("loaded");
