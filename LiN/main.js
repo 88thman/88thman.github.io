@@ -8,17 +8,14 @@ Midi.access = null;
 Midi.prototype.load = function(midiAccess) {
   Midi.access = midiAccess;
 }
-Midi.prototype.getInputs = function() {
-  if (Midi.access == null) {
-    return null;
-  } else {
-
-  }
+Midi.prototype.setInput = function(inputIndex) {
+  
 }
 
 let midi = new Midi();
 
 navigator.requestMIDIAccess().then( Midi.load, ()=>{} );
+
 
 /*
 function listInputsAndOutputs( midiAccess ) {
