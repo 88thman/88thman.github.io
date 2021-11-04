@@ -1,35 +1,24 @@
-function LiN() {
-  
+function LiN() {}
+window.addEventListener('load', LiN.load);
+
+
+function Midi() {}
+Midi.access = null;
+
+Midi.prototype.load = function(midiAccess) {
+  Midi.access = midiAccess;
 }
+Midi.prototype.getInputs = function() {
+  if (Midi.access == null) {
+    return null;
+  } else {
 
-function Midi() {
-}
-Midi.available = false;
-
-Midi.prototype.load = function() {
-
+  }
 }
 
 let midi = new Midi();
 
-LiN.load = function() {
-  console.log("loaded");
-};
-LiN.midi = {
-  works: false
-};
-LiN.midi.init = function (midiAccess) {
-  LiN.midi.works = true;
-  console.log( "MIDI ready!" );
-  listInputsAndOutputs(midiAccess);
-}
-LiN.midi.noMidi = function (msg) {
-  LiN.midi.works = false;
-  console.log( "Failed to get MIDI access - " + msg );
-}
-
-window.addEventListener('load', LiN.load);
-navigator.requestMIDIAccess().then( LiN.midi.init, LiN.midi.noMidi );
+navigator.requestMIDIAccess().then( Midi.load, ()=>{} );
 
 /*
 function listInputsAndOutputs( midiAccess ) {
