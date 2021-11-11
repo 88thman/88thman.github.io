@@ -13,3 +13,10 @@ body {
     display: inline-block;
     height: 1em;
 }
+
+button {
+    cursor: pointer;
+}
+button:hover {
+    
+}
