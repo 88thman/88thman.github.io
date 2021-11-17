@@ -6,10 +6,10 @@ function include(fileName) {
 }
 
 
-function LiN() {
-	this.load = function() {
-		include("midi.js");
-	}
+function LiN() {}
+
+LiN.load = function() {
+	include("midi.js");
 }
 window.addEventListener('load', LiN.load);
 
